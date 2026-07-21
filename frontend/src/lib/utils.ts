@@ -103,7 +103,6 @@ export const categoryDefaults: Record<string, { color: string; icon: string }> =
     human_rights: { color: '#9333ea', icon: '✊' },
     factcheck: { color: '#0f766e', icon: '✅' },
   };
-}
 
 /**
  * Resolves a media URL from backend dynamically to ensure it works on other PCs

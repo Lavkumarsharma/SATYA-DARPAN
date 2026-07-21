@@ -1,3 +1,4 @@
+export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Clock, Eye, ChevronLeft, Share2, BookOpen, ExternalLink } from 'lucide-react';
@@ -262,7 +263,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
             {article.publishedAt && (
               <div className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4" />
-                {new Date(article.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })}
+                {new Date(article.publishedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'long', year: 'numeric' })} | {new Date(article.publishedAt).toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })}
               </div>
             )}
             <div className="flex items-center gap-1.5">

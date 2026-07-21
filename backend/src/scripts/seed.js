@@ -107,8 +107,8 @@ async function seed() {
     if (!admin) {
       admin = await User.create({
         name: 'SatyaDarpan Admin',
-        email: 'admin@satyadarpan.com',
-        password: 'adminpassword123',
+        email: 'satyadarpan12111673@gmail.com',
+        password: 'Satyadarpan@12111673',
         role: 'admin',
         isVerified: true,
       });

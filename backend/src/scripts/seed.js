@@ -107,8 +107,8 @@ async function seed() {
     if (!admin) {
       admin = await User.create({
         name: 'SatyaDarpan Admin',
-        email: 'satyadarpan12111673@gmail.com',
-        password: 'Satyadarpan@12111673',
+        email: process.env.ADMIN_EMAIL || 'admin@satyadarpan.com',
+        password: process.env.ADMIN_PASSWORD || 'adminpassword123',
         role: 'admin',
         isVerified: true,
       });

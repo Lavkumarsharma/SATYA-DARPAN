@@ -103,3 +103,27 @@ export const categoryDefaults: Record<string, { color: string; icon: string }> =
     human_rights: { color: '#9333ea', icon: '✊' },
     factcheck: { color: '#0f766e', icon: '✅' },
   };
+}
+
+/**
+ * Resolves a media URL from backend dynamically to ensure it works on other PCs
+ */
+export function resolveImageUrl(url: string | undefined | null): string {
+  if (!url) return '/indian_rupee_bg.png';
+  
+  // If the URL contains localhost:5000, dynamically rewrite to point to the current active backend base URL
+  if (url.includes('localhost:5000')) {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://satya-darpan.onrender.com/api';
+    const backendBase = API_URL.replace('/api', '');
+    return url.replace(/https?:\/\/localhost:5000/, backendBase);
+  }
+  
+  // If it starts with a relative API path
+  if (url.startsWith('/api/')) {
+    const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://satya-darpan.onrender.com/api';
+    const backendBase = API_URL.replace('/api', '');
+    return `${backendBase}${url}`;
+  }
+  
+  return url;
+}

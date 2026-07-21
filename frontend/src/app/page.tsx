@@ -5,6 +5,7 @@ import {
   ChevronRight, ShieldAlert, Eye, Clock, FileText, Lock, Fingerprint, X,
   AlertTriangle, FileCheck2, Search, ArrowRight, Database, Users, TrendingUp
 } from 'lucide-react';
+import { resolveImageUrl } from '@/lib/utils';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://satya-darpan.onrender.com/api';
 const BACKEND_BASE_URL = API.replace('/api', '');
@@ -135,7 +136,7 @@ export default function Home() {
                 Documentary Proof
               </div>
               <img 
-                src={hero.image ? (hero.image.startsWith('/api/') ? `${BACKEND_BASE_URL}${hero.image}` : hero.image) : "/indian_constitution.png"} 
+                src={resolveImageUrl(hero.image || '/indian_constitution.png')} 
                 alt="Law and Constitution evidence files" 
                 className="rounded object-contain w-full h-[450px] transition-all duration-500" 
               />
@@ -228,7 +229,7 @@ export default function Home() {
               <div className="relative h-56 overflow-hidden">
                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors z-10" />
                 <img
-                  src={article.coverImage?.url || '/indian_rupee_bg.png'}
+                  src={resolveImageUrl(article.coverImage?.url)}
                   alt={article.title}
                   className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
                 />

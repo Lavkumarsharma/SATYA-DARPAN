@@ -2,6 +2,7 @@ export const dynamic = 'force-dynamic';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Clock, Eye, ChevronLeft, Share2, BookOpen, ExternalLink } from 'lucide-react';
+import { resolveImageUrl } from '@/lib/utils';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://satya-darpan.onrender.com/api';
 
@@ -153,7 +154,7 @@ function renderNode(node: any): string {
     case 'horizontalRule':
       return `<hr class="my-10 border-border" />`;
     case 'image':
-      return `<figure class="my-8"><img src="${node.attrs?.src || ''}" alt="${node.attrs?.alt || ''}" class="w-full rounded-xl border border-border shadow-lg" />${node.attrs?.title ? `<figcaption class="text-center text-sm text-text-muted mt-3 italic">${node.attrs.title}</figcaption>` : ''}</figure>`;
+      return `<figure class="my-8"><img src="${resolveImageUrl(node.attrs?.src)}" alt="${node.attrs?.alt || ''}" class="w-full rounded-xl border border-border shadow-lg" />${node.attrs?.title ? `<figcaption class="text-center text-sm text-text-muted mt-3 italic">${node.attrs.title}</figcaption>` : ''}</figure>`;
     case 'youtube':
       return `<div class="my-8 aspect-video rounded-xl overflow-hidden border border-border shadow-lg"><iframe src="https://www.youtube.com/embed/${node.attrs?.src?.split('v=')[1] || ''}" class="w-full h-full" allowfullscreen frameborder="0"></iframe></div>`;
     default:
@@ -285,7 +286,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
           {article.coverImage?.url && (
             <div className="mb-10">
               <img
-                src={article.coverImage.url}
+                src={resolveImageUrl(article.coverImage.url)}
                 alt={article.coverImage.alt || article.title}
                 className="w-full rounded border border-border shadow-xl"
               />
@@ -331,7 +332,7 @@ export default async function ArticlePage({ params }: { params: { slug: string }
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-text">{ref.title}</p>
                       {ref.url && (
-                        <a href={ref.url} target="_blank" rel="noopener noreferrer"
+                        <a href={resolveImageUrl(ref.url)} target="_blank" rel="noopener noreferrer"
                           className="text-xs text-accent hover:underline flex items-center gap-1 mt-0.5">
                           {ref.url} <ExternalLink className="w-3 h-3" />
                         </a>

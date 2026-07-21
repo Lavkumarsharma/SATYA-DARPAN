@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { CheckCircle, Calendar, Eye } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://satya-darpan.onrender.com/api';
 
 const MOCK_FACT_CHECKS = [
   {

@@ -6,7 +6,7 @@ import {
   AlertTriangle, FileCheck2, Search, ArrowRight, Database, Users, TrendingUp
 } from 'lucide-react';
 
-const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API = process.env.NEXT_PUBLIC_API_URL || 'https://satya-darpan.onrender.com/api';
 
 // ─── Fallback / mock data ──────────────────────────────────────────────────
 const FALLBACK_HERO = {

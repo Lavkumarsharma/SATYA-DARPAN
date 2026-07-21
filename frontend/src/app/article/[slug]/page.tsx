@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Clock, Eye, ChevronLeft, Share2, BookOpen, ExternalLink } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://satya-darpan.onrender.com/api';
 
 // The 3 seeded articles as fallback when DB not connected
 const MOCK_ARTICLES: Record<string, any> = {

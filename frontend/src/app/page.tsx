@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 const API = process.env.NEXT_PUBLIC_API_URL || 'https://satya-darpan.onrender.com/api';
+const BACKEND_BASE_URL = API.replace('/api', '');
 
 // ─── Fallback / mock data ──────────────────────────────────────────────────
 const FALLBACK_HERO = {
@@ -35,7 +36,7 @@ const FALLBACK_VAULT = [
 ];
 
 const FALLBACK_ARTICLES = [
-  { slug: 'jantar-mantar-protest-police-action-censorship-truth', title: 'Jantar Mantar Protest: Peaceful Protesters Par Police Action Aur Media Censorship Ka Poora Sach', category: 'Expose', coverImage: { url: 'http://localhost:5000/api/media/file/6a5f3c4429d9e96bb9703e7b' }, excerpt: '20 July 2026 ko Jantar Mantar par berozgari ke khilaf peaceful student protest par police ne excessive water cannons aur force use kiya. Mainstream media ne ise violent dikhaya, par sachai kuch aur hai.', publishedAt: '2026-07-21' },
+  { slug: 'jantar-mantar-protest-police-action-censorship-truth', title: 'Jantar Mantar Protest: Peaceful Protesters Par Police Action Aur Media Censorship Ka Poora Sach', category: 'Expose', coverImage: { url: 'https://satya-darpan.onrender.com/api/media/file/6a5f3c4429d9e96bb9703e7b' }, excerpt: '20 July 2026 ko Jantar Mantar par berozgari ke khilaf peaceful student protest par police ne excessive water cannons aur force use kiya. Mainstream media ne ise violent dikhaya, par sachai kuch aur hai.', publishedAt: '2026-07-21' },
   { slug: 'electoral-bonds-scam-truth', title: 'इलेक्टोरल बॉन्ड्स विश्लेषण: चुनावी चंदे और नीतिगत समझौतों का पूरा सच', category: 'वित्तीय अनियमितता', coverImage: { url: '/indian_rupee_bg.png' }, excerpt: 'सुप्रीम कोर्ट के ऐतिहासिक फैसले के बाद जारी डेटा का गहन विश्लेषण।', publishedAt: '2024-03-15' },
   { slug: 'adani-hindenburg-full-truth', title: 'औद्योगिक एकाधिकार और सार्वजनिक धन: हिंडनबर्ग रिपोर्ट के वित्तीय साक्ष्य', category: 'विशेष खुलासे', coverImage: { url: '/indian_constitution.png' }, excerpt: 'मॉरीशस और अन्य टैक्स हैवन्स के माध्यम से संदिग्ध वित्तीय लेन-देन।', publishedAt: '2024-02-10' },
   { slug: 'fact-check-india-5th-economy-reality', title: 'आर्थिक वास्तविकता: जीडीपी के विकास दावों और बेरोजगारी दर की तुलनात्मक समीक्षा', category: 'तथ्य जांच', coverImage: { url: '/indian_constitution.png' }, excerpt: 'आधिकारिक आर्थिक दावों के विपरीत NSO और RBI के आंकड़ों का विश्लेषण।', publishedAt: '2024-04-01' },
@@ -134,7 +135,7 @@ export default function Home() {
                 Documentary Proof
               </div>
               <img 
-                src={hero.image ? (hero.image.startsWith('/api/') ? `http://localhost:5000${hero.image}` : hero.image) : "/indian_constitution.png"} 
+                src={hero.image ? (hero.image.startsWith('/api/') ? `${BACKEND_BASE_URL}${hero.image}` : hero.image) : "/indian_constitution.png"} 
                 alt="Law and Constitution evidence files" 
                 className="rounded object-contain w-full h-[450px] transition-all duration-500" 
               />

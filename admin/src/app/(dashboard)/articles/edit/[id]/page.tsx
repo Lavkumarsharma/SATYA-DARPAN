@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import AdvancedEditor from '@/components/editor/Editor';
-import TiptapEditor from '@/components/editor/TiptapEditor';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Save, ArrowLeft, Globe, FileText, Trash2, ImageIcon, Tag } from 'lucide-react';
 import Link from 'next/link';

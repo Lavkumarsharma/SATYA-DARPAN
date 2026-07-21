@@ -54,7 +54,7 @@ export default function Home() {
   const [activeCompareTab, setActiveCompareTab] = useState(0);
   const [whistleblowerSuccess, setWhistleblowerSuccess] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
-  const [inspectingFile, setInspectingFile] = useState(null);
+  const [inspectingFile, setInspectingFile] = useState<any>(null);
 
   // Dynamic CMS content state
   const [hero, setHero] = useState<any>(FALLBACK_HERO);

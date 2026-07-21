@@ -45,7 +45,7 @@ export default function CategoriesPage() {
     } catch (err) {
       toast.error('Failed to add category. Backend might not be connected.');
       // Optimistic UI for mock
-      setCategories([...categories, { _id: Date.now().toString(), name: newCategoryName, slug: newCategoryName.toLowerCase().replace(/ /g, '-'), count: 0 }]);
+      setCategories([...categories, { _id: Date.now().toString(), name: newCategoryName, slug: newCategoryName.toLowerCase().replace(/ /g, '-'), count: 0, articleCount: 0 }]);
       setNewCategoryName('');
     } finally {
       setAdding(false);
@@ -143,7 +143,7 @@ export default function CategoriesPage() {
                       <td className="px-6 py-4 text-text-muted font-mono text-xs">{cat.slug}</td>
                       <td className="px-6 py-4 text-center">
                         <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-accent/10 text-accent font-bold text-xs">
-                          {cat.count || 0}
+                          {cat.articleCount !== undefined ? cat.articleCount : (cat.count || 0)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-right">

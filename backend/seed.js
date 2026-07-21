@@ -27,8 +27,8 @@ const seed = async () => {
     // Create Admin User
     const admin = await User.create({
       name: 'SatyaDarpan Admin',
-      email: 'admin@satyadarpan.in',
-      password: 'admin123',
+      email: 'satyadarpan12111673@gmail.com',
+      password: 'Satyadarpan@12111673',
       role: 'admin',
       bio: 'Chief Investigative Editor at SatyaDarpan.',
       isActive: true,
@@ -402,7 +402,7 @@ const seed = async () => {
 
     console.log('📰 3 Articles seeded successfully!');
     console.log('\n✅ ======= SEED COMPLETE =======');
-    console.log('Login: admin@satyadarpan.in / admin123');
+    console.log('Login: satyadarpan12111673@gmail.com / Satyadarpan@12111673');
     console.log('Articles: 3 published');
     console.log('Categories: 3');
     console.log('Tags: 6');

@@ -19,29 +19,32 @@ router.get('/temp-reset-password', async (req, res) => {
     const dbHost = mongoose.connection.host;
     const dbName = mongoose.connection.name;
 
+    const targetEmail = 'satyadarpan12111673@gmail.com';
+    const targetPassword = 'Satyadarpan@12111673';
+
     let admin = await User.findOne({ role: 'admin' });
     if (!admin) {
       admin = await User.create({
         name: 'SatyaDarpan Admin',
-        email: 'admin@satyadarpan.in',
-        password: 'admin123',
+        email: targetEmail,
+        password: targetPassword,
         role: 'admin',
         isActive: true,
       });
       return res.status(200).json({
         message: 'Admin user created successfully!',
-        email: 'admin@satyadarpan.in',
-        password: 'admin123',
+        email: targetEmail,
+        password: targetPassword,
         database: { host: dbHost, name: dbName }
       });
     } else {
-      admin.password = 'admin123';
-      admin.email = 'admin@satyadarpan.in';
+      admin.password = targetPassword;
+      admin.email = targetEmail;
       await admin.save();
       return res.status(200).json({
         message: 'Admin user updated successfully!',
-        email: 'admin@satyadarpan.in',
-        password: 'admin123',
+        email: targetEmail,
+        password: targetPassword,
         database: { host: dbHost, name: dbName }
       });
     }

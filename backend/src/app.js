@@ -35,6 +35,14 @@ if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); // Logging
 }
 
+// Health Check Endpoints for Deployments
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'UP', timestamp: new Date() });
+});
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'UP', timestamp: new Date() });
+});
+
 // Apply rate limiting to all /api routes
 app.use('/api', generalLimiter);
 

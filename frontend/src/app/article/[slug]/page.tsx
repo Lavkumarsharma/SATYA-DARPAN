@@ -164,7 +164,7 @@ function renderNode(node: any): string {
 async function getArticle(slug: string) {
   // Try the /slug/:slug endpoint first
   try {
-    const res = await fetch(`${API_URL}/articles/slug/${slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_URL}/articles/slug/${slug}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       if (data.success && data.data) return data.data;
@@ -174,7 +174,7 @@ async function getArticle(slug: string) {
   }
   // Try the /:slug endpoint as fallback
   try {
-    const res = await fetch(`${API_URL}/articles/${slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_URL}/articles/${slug}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       if (data.success && data.data) return data.data;

@@ -10,7 +10,7 @@ export const apiClient = axios.create({
 // For Server Components (Next.js fetch cache)
 export async function fetchAPI(endpoint: string, options: RequestInit = {}) {
   const res = await fetch(`${API_URL}${endpoint}`, {
-    next: { revalidate: 60 }, // Cache for 60 seconds by default
+    cache: 'no-store',
     ...options,
   });
   

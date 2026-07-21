@@ -15,7 +15,7 @@ const MOCK_CATEGORIES = [
 
 async function getCategories() {
   try {
-    const res = await fetch(`${API_URL}/categories`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_URL}/categories`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       if (data.success && data.data?.length > 0) return data.data;

@@ -22,7 +22,7 @@ const FALLBACK = {
 
 async function getAboutData() {
   try {
-    const res = await fetch(`${API}/sections/about_page`, { next: { revalidate: 30 } });
+    const res = await fetch(`${API}/sections/about_page`, { cache: 'no-store' });
     if (res.ok) {
       const d = await res.json();
       if (d.data?.data) return d.data.data;

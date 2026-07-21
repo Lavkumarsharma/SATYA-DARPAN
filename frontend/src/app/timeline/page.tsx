@@ -30,7 +30,7 @@ const MOCK_EVENTS = [
 
 async function getTimelineEvents() {
   try {
-    const res = await fetch(`${API_URL}/articles?sort=publishedAt`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_URL}/articles?sort=publishedAt`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       if (data.success && data.data?.length > 0) {

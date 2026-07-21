@@ -23,7 +23,7 @@ const MOCK_FACT_CHECKS = [
 
 async function getFactChecks() {
   try {
-    const res = await fetch(`${API_URL}/articles/fact-checks`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_URL}/articles/fact-checks`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       if (data.success && data.data?.length > 0) return data.data;

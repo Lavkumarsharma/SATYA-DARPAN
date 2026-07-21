@@ -6,7 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 async function getCategoryArticles(slug: string) {
   try {
-    const res = await fetch(`${API_URL}/articles?category=${slug}`, { next: { revalidate: 60 } });
+    const res = await fetch(`${API_URL}/articles?category=${slug}`, { cache: 'no-store' });
     if (res.ok) {
       const data = await res.json();
       if (data.success && data.data?.length > 0) return { articles: data.data, category: { name: slug, slug } };

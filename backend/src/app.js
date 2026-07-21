@@ -19,9 +19,27 @@ connectDB();
 
 // Global Middlewares
 app.use(helmet({ crossOriginResourcePolicy: false })); // Security headers but allow cross-origin images
+
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  process.env.ADMIN_URL,
+  'http://localhost:3000',
+  'http://localhost:3001'
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: [process.env.FRONTEND_URL, process.env.ADMIN_URL],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      const isAllowed = allowedOrigins.includes(origin) || 
+                        origin.endsWith('.vercel.app') || 
+                        origin.startsWith('http://localhost:');
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        callback(null, false); // Block other origins safely
+      }
+    },
     credentials: true,
   })
 );

@@ -87,7 +87,7 @@ const articleSchema = new mongoose.Schema(
 
 // Auto-generate slug from title
 articleSchema.pre('save', async function (next) {
-  if (this.isModified('title')) {
+  if (!this.slug && this.title) {
     let baseSlug = slugify(this.title, { lower: true, strict: true });
     let slug = baseSlug;
     let counter = 1;

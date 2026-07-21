@@ -204,18 +204,18 @@ export default function EditArticlePage() {
             </select>
           </div>
           <div className="flex flex-col gap-3 justify-end">
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div onClick={() => setIsFactCheck(!isFactCheck)} className={`w-10 h-5 rounded-full transition-colors relative ${isFactCheck ? 'bg-accent' : 'bg-border'}`}>
+            <div onClick={() => setIsFactCheck(!isFactCheck)} className="flex items-center gap-3 cursor-pointer group">
+              <div className={`w-10 h-5 rounded-full transition-colors relative ${isFactCheck ? 'bg-accent' : 'bg-border'}`}>
                 <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isFactCheck ? 'translate-x-5' : 'translate-x-0.5'}`} />
               </div>
-              <span className="text-sm text-text-muted group-hover:text-text">Mark as Fact Check</span>
-            </label>
-            <label className="flex items-center gap-3 cursor-pointer group">
-              <div onClick={() => setIsFeatured(!isFeatured)} className={`w-10 h-5 rounded-full transition-colors relative ${isFeatured ? 'bg-accent' : 'bg-border'}`}>
+              <span className="text-sm text-text-muted group-hover:text-text select-none">Mark as Fact Check</span>
+            </div>
+            <div onClick={() => setIsFeatured(!isFeatured)} className="flex items-center gap-3 cursor-pointer group">
+              <div className={`w-10 h-5 rounded-full transition-colors relative ${isFeatured ? 'bg-accent' : 'bg-border'}`}>
                 <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform ${isFeatured ? 'translate-x-5' : 'translate-x-0.5'}`} />
               </div>
-              <span className="text-sm text-text-muted group-hover:text-text">Feature on Homepage</span>
-            </label>
+              <span className="text-sm text-text-muted group-hover:text-text select-none">Feature on Homepage</span>
+            </div>
           </div>
         </div>
       </div>

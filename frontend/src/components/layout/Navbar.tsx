@@ -1,0 +1,130 @@
+'use client';
+
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { usePathname } from 'next/navigation';
+import { Search, Menu, X, Eye } from 'lucide-react';
+
+export default function Navbar() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const isHomepage = pathname === '/';
+  const solid = isScrolled || !isHomepage;
+
+  return (
+    <header
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        solid
+          ? 'bg-background/95 backdrop-blur-md py-3'
+          : 'bg-transparent py-5'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
+        
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-3 group">
+          <div className={`p-1.5 rounded transition-all duration-300 ${
+            solid
+              ? 'border border-accent/30 bg-accent/5 group-hover:bg-accent/10'
+              : 'border border-white/20 bg-white/5 group-hover:bg-white/10'
+          }`}>
+            <Eye className={`h-5 w-5 group-hover:rotate-12 transition-transform duration-300 ${
+              solid ? 'text-accent' : 'text-white'
+            }`} />
+          </div>
+          <span className={`text-xl font-playfair font-black tracking-widest transition-colors duration-300 ${
+            solid ? 'text-text' : 'text-white'
+          }`}>
+            सत्यदर्पण
+          </span>
+        </Link>
+
+        {/* Nav links */}
+        <nav className="hidden md:flex items-center gap-8">
+          {['Home', 'Categories', 'Fact Checks', 'Timeline', 'About'].map((item) => {
+            const itemPath = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`;
+            const isActive = pathname === itemPath;
+            return (
+              <Link
+                key={item}
+                href={itemPath}
+                className={`text-[11px] uppercase tracking-widest font-black relative py-1.5 group transition-colors duration-200 ${
+                  isActive
+                    ? 'text-accent'
+                    : solid
+                      ? 'text-text-muted hover:text-text'
+                      : 'text-white/70 hover:text-white'
+                }`}
+              >
+                {item}
+                <span
+                  className={`absolute bottom-0 left-0 h-[2px] w-full bg-accent origin-left transition-transform duration-300 ${
+                    isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                  }`}
+                />
+              </Link>
+            );
+          })}
+        </nav>
+
+        {/* Action buttons */}
+        <div className="flex items-center gap-2">
+          <button
+            aria-label="Search"
+            className={`p-2 rounded border transition-all duration-200 ${
+              solid
+                ? 'text-text border-border hover:border-accent/50 hover:text-accent'
+                : 'text-white border-white/20 hover:border-white/50'
+            }`}
+          >
+            <Search className="h-4 w-4" />
+          </button>
+
+          <button
+            aria-label="Mobile menu"
+            className={`md:hidden p-2 rounded border transition-colors ${
+              solid
+                ? 'text-text border-border'
+                : 'text-white border-white/20'
+            }`}
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile drawer */}
+      {mobileMenuOpen && (
+        <div className="md:hidden absolute top-full left-0 w-full bg-background/95 backdrop-blur-md border-t border-border shadow-lg">
+          <nav className="flex flex-col p-4">
+            {['Home', 'Categories', 'Fact Checks', 'Timeline', 'About'].map((item) => {
+              const itemPath = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`;
+              const isActive = pathname === itemPath;
+              return (
+                <Link
+                  key={item}
+                  href={itemPath}
+                  className={`px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors ${
+                    isActive ? 'text-accent' : 'text-text hover:bg-white/5'
+                  }`}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  {item}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      )}
+    </header>
+  );
+}

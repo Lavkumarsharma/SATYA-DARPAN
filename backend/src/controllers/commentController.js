@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Comment = require('../models/Comment');
 const Article = require('../models/Article');
 const { AppError, asyncHandler } = require('../middleware/errorHandler');
@@ -6,15 +7,26 @@ const { AppError, asyncHandler } = require('../middleware/errorHandler');
 exports.createComment = asyncHandler(async (req, res, next) => {
   const { articleId, name, email, content, parentId } = req.body;
 
-  const article = await Article.findById(articleId);
-  if (!article || article.status !== 'published') {
+  if (!name || !content) {
+    return next(new AppError('Name and comment content are required', 400));
+  }
+
+  let article;
+  if (mongoose.Types.ObjectId.isValid(articleId)) {
+    article = await Article.findById(articleId);
+  } else {
+    article = await Article.findOne({ slug: articleId });
+  }
+
+  if (!article) {
     return next(new AppError('Article not found', 404));
   }
 
   const comment = await Comment.create({
-    article: articleId,
-    author: { name, email },
+    article: article._id,
+    author: { name, email: email || 'anonymous@satyadarpan.org' },
     content,
+    status: 'approved', // Auto-approve so reader comments show up immediately
     parent: parentId || null,
     ipAddress: req.ip,
   });
@@ -27,20 +39,27 @@ exports.createComment = asyncHandler(async (req, res, next) => {
   res.status(201).json({
     success: true,
     data: comment,
-    message: 'Comment submitted and awaiting moderation.',
+    message: 'Comment posted successfully!',
   });
 });
 
-// GET /api/comments/article/:articleId — approved comments with nested replies
+// GET /api/comments/article/:articleId — approved comments with nested replies (handles ID or Slug)
 exports.getCommentsByArticle = asyncHandler(async (req, res) => {
+  let targetId = req.params.articleId;
+
+  if (!mongoose.Types.ObjectId.isValid(targetId)) {
+    const article = await Article.findOne({ slug: targetId });
+    if (!article) return res.status(200).json({ success: true, data: [] });
+    targetId = article._id;
+  }
+
   const comments = await Comment.find({
-    article: req.params.articleId,
-    status: 'approved',
+    article: targetId,
+    status: { $in: ['approved', 'pending'] },
     parent: null,
   })
     .populate({
       path: 'replies',
-      match: { status: 'approved' },
       options: { sort: { createdAt: 1 } },
     })
     .sort({ pinned: -1, createdAt: -1 })

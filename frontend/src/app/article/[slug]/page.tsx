@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { Calendar, Clock, Eye, ChevronLeft, Share2, BookOpen, ExternalLink } from 'lucide-react';
 import { resolveImageUrl } from '@/lib/utils';
+import CommentsSection from '@/components/CommentsSection';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://satya-darpan.onrender.com/api';
 
@@ -344,6 +345,9 @@ export default async function ArticlePage({ params }: { params: { slug: string }
               </div>
             </div>
           )}
+
+          {/* Reader Comments Section */}
+          <CommentsSection articleId={article._id || params.slug} />
 
           {/* Navigation */}
           <div className="mt-10 flex items-center justify-between">

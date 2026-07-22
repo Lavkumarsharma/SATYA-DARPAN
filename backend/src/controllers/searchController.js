@@ -10,7 +10,13 @@ exports.search = asyncHandler(async (req, res) => {
 
   const filter = { status: 'published' };
 
-  if (q) filter.$text = { $search: q };
+  if (q && q.trim()) {
+    const regex = new RegExp(q.trim(), 'i');
+    filter.$or = [
+      { title: regex },
+      { excerpt: regex },
+    ];
+  }
   if (category) filter.category = category;
   if (tags) filter.tags = { $in: tags.split(',') };
   if (author) filter.author = author;

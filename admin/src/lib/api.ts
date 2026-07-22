@@ -4,7 +4,12 @@ let currentAccessToken: string | null = null;
 
 export const setAccessToken = (token: string | null) => {
   currentAccessToken = token;
+  if (typeof window !== 'undefined') {
+    (window as any).__accessToken = token;
+  }
 };
+
+export const getAccessToken = () => currentAccessToken;
 
 const api = axios.create({
   baseURL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api',

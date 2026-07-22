@@ -17,10 +17,8 @@ export default function SectionCmsPage() {
   const fetchSections = async () => {
     try {
       setLoading(true);
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-      const res = await fetch(`${apiUrl}/sections`, { credentials: 'include' });
-      const json = await res.json();
-      const sectionData = json.data || [];
+      const res = await api.get('/sections');
+      const sectionData = res.data?.data || [];
       setSections(sectionData);
       
       const active = sectionData.find((s: any) => s.key === selectedKey);
@@ -29,7 +27,7 @@ export default function SectionCmsPage() {
       }
     } catch (err: any) {
       console.error('Fetch sections error:', err);
-      toast.error(`Error: ${err?.message || 'Failed to load sections'}`);
+      toast.error(`Error: ${err?.response?.data?.message || err?.message || 'Failed to load sections'}`);
     } finally {
       setLoading(false);
     }

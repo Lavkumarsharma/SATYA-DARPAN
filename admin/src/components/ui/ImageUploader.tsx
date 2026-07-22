@@ -4,6 +4,8 @@ import Cropper from 'react-easy-crop';
 import { Upload, X, Crop, Check, Image as ImageIcon, RefreshCw } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
+import api from '@/lib/api';
+
 // ── Canvas crop helper ─────────────────────────────────────────────────────
 async function getCroppedImg(imageSrc: string, pixelCrop: any): Promise<Blob> {
   const image = await new Promise<HTMLImageElement>((resolve, reject) => {
@@ -52,8 +54,6 @@ export default function ImageUploader({
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const API = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-
   // Resolve image URL for display
   const displayUrl = (url?: string) => {
     if (!url) return null;
@@ -63,23 +63,16 @@ export default function ImageUploader({
 
   // ── Upload a Blob/File to backend ───────────────────────────────────────
   const uploadBlob = async (blob: Blob, filename: string): Promise<string> => {
-    const token = (window as any).__accessToken || '';
     const form = new FormData();
     form.append('file', blob, filename);
 
-    const res = await fetch(`${API}/media/upload`, {
-      method: 'POST',
-      credentials: 'include',
-      headers: token ? { Authorization: `Bearer ${token}` } : {},
-      body: form,
+    const res = await api.post('/media/upload', form, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
 
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.message || 'Upload failed');
-    }
-    const data = await res.json();
-    return data.data?.url as string;
+    return res.data.data?.url as string;
   };
 
   // ── File selected ────────────────────────────────────────────────────────

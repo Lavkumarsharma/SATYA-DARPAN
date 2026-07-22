@@ -227,7 +227,6 @@ export default function Home() {
           {articles.map((article: any, i: number) => (
             <Link key={i} href={`/article/${article.slug}`} className="group flex flex-col bg-surface rounded border border-border overflow-hidden hover:border-accent/50 hover:shadow-2xl hover:shadow-accent/5 transition-all duration-300">
               <div className="relative h-56 overflow-hidden">
-                <div className="absolute inset-0 bg-black/40 group-hover:bg-black/10 transition-colors z-10" />
                 <img
                   src={resolveImageUrl(article.coverImage?.url)}
                   alt={article.title}

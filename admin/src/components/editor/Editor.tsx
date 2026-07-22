@@ -14,8 +14,8 @@ import {
   Italic, 
   Underline as UnderlineIcon, 
   Strikethrough, 
-  Heading1, 
   Heading2, 
+  Heading3, 
   Quote, 
   Highlighter, 
   Link as LinkIcon, 
@@ -24,11 +24,12 @@ import {
   List, 
   ListOrdered,
   Paintbrush,
-  AlignLeft,
-  AlignCenter,
-  AlignRight
+  Upload,
+  RefreshCw
 } from 'lucide-react';
-import { useCallback } from 'react';
+import { useCallback, useRef, useState } from 'react';
+import api from '@/lib/api';
+import { toast } from 'react-hot-toast';
 
 interface EditorProps {
   content: any;
@@ -36,10 +37,47 @@ interface EditorProps {
 }
 
 const MenuBar = ({ editor }: { editor: any }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+
   if (!editor) return null;
 
-  const addImage = useCallback(() => {
-    const url = window.prompt('Enter image URL:');
+  // Direct File Upload from Device
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    e.target.value = '';
+
+    try {
+      setUploading(true);
+      toast.loading('Uploading image...', { id: 'editor-img-upload' });
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await api.post('/media/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+
+      let url = res.data.data?.url;
+      if (url) {
+        if (!url.startsWith('http')) {
+          const API_HOST = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+          const baseHost = API_HOST.replace(/\/api\/?$/, '');
+          url = `${baseHost}${url}`;
+        }
+        editor.chain().focus().setImage({ src: url }).run();
+        toast.success('Image inserted into article!', { id: 'editor-img-upload' });
+      }
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || err.message || 'Image upload failed', { id: 'editor-img-upload' });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const addImageByUrl = useCallback(() => {
+    const url = window.prompt('Or enter external image URL:');
     if (url) {
       editor.chain().focus().setImage({ src: url }).run();
     }
@@ -76,16 +114,25 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
   // Pre-defined highlight backgrounds
   const highlightColors = [
-    { name: 'Red', value: '#fef2f2' }, // Red bg
-    { name: 'Yellow', value: '#fef9c3' }, // Yellow bg
-    { name: 'Green', value: '#f0fdf4' }, // Green bg
-    { name: 'Blue', value: '#eff6ff' }, // Blue bg
+    { name: 'Red', value: '#fef2f2' },
+    { name: 'Yellow', value: '#fef9c3' },
+    { name: 'Green', value: '#f0fdf4' },
+    { name: 'Blue', value: '#eff6ff' },
     { name: 'Reset', value: '' }
   ];
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 bg-surface border-b border-border rounded-t-xl sticky top-0 z-10">
       
+      {/* Hidden File Input for Direct Upload */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        accept="image/*"
+        onChange={handleFileSelect}
+        className="hidden"
+      />
+
       {/* Bold */}
       <button
         type="button"
@@ -242,14 +289,30 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <LinkIcon className="w-4 h-4" />
       </button>
 
-      {/* Image */}
+      {/* DIRECT IMAGE FILE UPLOAD BUTTON */}
       <button 
         type="button"
-        onClick={addImage} 
-        className="p-2 rounded-lg transition-colors text-text hover:bg-background"
-        title="Insert Image (Link)"
+        onClick={() => fileInputRef.current?.click()} 
+        disabled={uploading}
+        className="flex items-center gap-1.5 p-2 px-2.5 bg-accent/10 border border-accent/30 rounded-lg transition-all text-accent hover:bg-accent/20 font-medium text-xs disabled:opacity-50"
+        title="Insert Image File directly from device"
       >
-        <ImageIcon className="w-4 h-4" />
+        {uploading ? (
+          <RefreshCw className="w-4 h-4 animate-spin text-accent" />
+        ) : (
+          <ImageIcon className="w-4 h-4 text-accent" />
+        )}
+        <span>{uploading ? 'Uploading...' : 'Insert Image'}</span>
+      </button>
+
+      {/* Secondary URL Option */}
+      <button 
+        type="button"
+        onClick={addImageByUrl} 
+        className="p-2 rounded-lg transition-colors text-text-muted hover:text-text hover:bg-background text-xs font-mono"
+        title="Insert Image by URL string"
+      >
+        URL
       </button>
 
       {/* YouTube Video */}
@@ -264,6 +327,32 @@ const MenuBar = ({ editor }: { editor: any }) => {
     </div>
   );
 };
+
+// Helper for drop / paste upload
+async function uploadAndInsertImageFile(file: File, editor: any) {
+  try {
+    toast.loading('Uploading dropped/pasted image...', { id: 'editor-drop-upload' });
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const res = await api.post('/media/upload', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    });
+
+    let url = res.data.data?.url;
+    if (url) {
+      if (!url.startsWith('http')) {
+        const API_HOST = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+        const baseHost = API_HOST.replace(/\/api\/?$/, '');
+        url = `${baseHost}${url}`;
+      }
+      editor.chain().focus().setImage({ src: url }).run();
+      toast.success('Image inserted!', { id: 'editor-drop-upload' });
+    }
+  } catch (err: any) {
+    toast.error(err.response?.data?.message || err.message || 'Image upload failed', { id: 'editor-drop-upload' });
+  }
+}
 
 export default function AdvancedEditor({ content, onChange }: EditorProps) {
   const editor = useEditor({
@@ -282,6 +371,32 @@ export default function AdvancedEditor({ content, onChange }: EditorProps) {
     editorProps: {
       attributes: {
         class: 'prose prose-lg dark:prose-invert prose-headings:font-playfair prose-headings:font-bold prose-p:font-inter prose-a:text-accent focus:outline-none min-h-[500px] py-6 px-4',
+      },
+      handleDrop: (view, event, slice, moved) => {
+        if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
+          const file = event.dataTransfer.files[0];
+          if (file.type.startsWith('image/')) {
+            event.preventDefault();
+            // Get editor instance from view
+            uploadAndInsertImageFile(file, (view as any).editor || { chain: () => (view as any) });
+            return true;
+          }
+        }
+        return false;
+      },
+      handlePaste: (view, event) => {
+        const items = Array.from(event.clipboardData?.items || []);
+        for (const item of items) {
+          if (item.type.indexOf('image') === 0) {
+            const file = item.getAsFile();
+            if (file) {
+              event.preventDefault();
+              uploadAndInsertImageFile(file, (view as any).editor || { chain: () => (view as any) });
+              return true;
+            }
+          }
+        }
+        return false;
       },
     },
     onUpdate: ({ editor }) => {

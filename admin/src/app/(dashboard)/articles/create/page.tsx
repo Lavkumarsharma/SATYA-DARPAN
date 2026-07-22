@@ -1,12 +1,21 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import AdvancedEditor from '@/components/editor/Editor';
+import dynamic from 'next/dynamic';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Save, ArrowLeft, Image as ImageIcon, Globe, FileText, Tag, Hash } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
+
+const AdvancedEditor = dynamic(() => import('@/components/editor/Editor'), {
+  ssr: false,
+  loading: () => (
+    <div className="border border-border rounded-xl bg-background min-h-[500px] flex items-center justify-center text-text-muted animate-pulse">
+      Loading editor...
+    </div>
+  ),
+});
 
 export default function CreateArticlePage() {
   const router = useRouter();

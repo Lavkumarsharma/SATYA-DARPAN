@@ -1,17 +1,27 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import AdvancedEditor from '@/components/editor/Editor';
+import dynamic from 'next/dynamic';
 import ImageUploader from '@/components/ui/ImageUploader';
 import { Save, ArrowLeft, Globe, FileText, Trash2, ImageIcon, Tag } from 'lucide-react';
 import Link from 'next/link';
 import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
 
+const AdvancedEditor = dynamic(() => import('@/components/editor/Editor'), {
+  ssr: false,
+  loading: () => (
+    <div className="border border-border rounded-xl bg-background min-h-[500px] flex items-center justify-center text-text-muted animate-pulse">
+      Loading editor...
+    </div>
+  ),
+});
+
 export default function EditArticlePage() {
   const router = useRouter();
   const params = useParams();
-  const id = params.id as string;
+  const rawId = params?.id;
+  const id = Array.isArray(rawId) ? rawId[0] : (rawId as string || '');
 
   const [title, setTitle] = useState('');
   const [excerpt, setExcerpt] = useState('');
@@ -31,7 +41,7 @@ export default function EditArticlePage() {
     const fetchData = async () => {
       try {
         const [articleRes, catRes] = await Promise.all([
-          api.get(`/articles/admin/${id}`),
+          api.get(`/articles/admin/${id}`).catch((err) => ({ data: { success: false, data: null, error: err } })),
           api.get('/categories').catch(() => ({ data: { success: false, data: [] } })),
         ]);
 
@@ -46,8 +56,7 @@ export default function EditArticlePage() {
           setIsFeatured(!!a.featured);
           setStatus(a.status || 'draft');
         } else {
-          toast.error('Article not found.');
-          router.push('/articles');
+          toast.error('Article not found or access denied.');
         }
 
         if (catRes.data?.success) setCategories(catRes.data.data || []);
@@ -59,7 +68,7 @@ export default function EditArticlePage() {
       }
     };
     fetchData();
-  }, [id, router]);
+  }, [id]);
 
   const handleSave = async (newStatus: 'draft' | 'published') => {
     if (!title.trim()) { toast.error('Title is required'); return; }

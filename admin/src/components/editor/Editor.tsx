@@ -309,7 +309,29 @@ const MenuBar = ({ editor }: { editor: any }) => {
 };
 
 export default function AdvancedEditor({ content, onChange }: EditorProps) {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const parseContent = (input: any) => {
+    if (!input) return { type: 'doc', content: [] };
+    if (typeof input === 'string') {
+      try {
+        const parsed = JSON.parse(input);
+        if (parsed && typeof parsed === 'object') return parsed;
+      } catch {
+        return input;
+      }
+    }
+    return input;
+  };
+
+  const initialContentRef = useRef(parseContent(content));
+
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Highlight.configure({ multicolor: true }),
@@ -321,7 +343,7 @@ export default function AdvancedEditor({ content, onChange }: EditorProps) {
       Color,
       Placeholder.configure({ placeholder: 'Start writing your investigation...' }),
     ],
-    content: content || { type: 'doc', content: [] },
+    content: initialContentRef.current,
     editorProps: {
       attributes: {
         class: 'prose prose-lg dark:prose-invert prose-headings:font-playfair prose-headings:font-bold prose-p:font-inter prose-a:text-accent focus:outline-none min-h-[500px] py-6 px-4',
@@ -333,19 +355,30 @@ export default function AdvancedEditor({ content, onChange }: EditorProps) {
   });
 
   // Sync content when loaded asynchronously from API
+  const lastSyncedContent = useRef<string>('');
+
   useEffect(() => {
     if (editor && content && !editor.isDestroyed) {
       try {
-        const currentJSON = JSON.stringify(editor.getJSON());
-        const newJSON = JSON.stringify(content);
-        if (currentJSON !== newJSON) {
-          editor.commands.setContent(content, false);
+        const parsed = parseContent(content);
+        const newJSON = JSON.stringify(parsed);
+        if (lastSyncedContent.current !== newJSON) {
+          lastSyncedContent.current = newJSON;
+          editor.commands.setContent(parsed, false);
         }
       } catch (err) {
         console.error('Failed to set editor content:', err);
       }
     }
   }, [editor, content]);
+
+  if (!mounted) {
+    return (
+      <div className="border border-border rounded-xl bg-background min-h-[500px] flex items-center justify-center text-text-muted animate-pulse">
+        Loading editor...
+      </div>
+    );
+  }
 
   return (
     <div className="border border-border rounded-xl bg-background overflow-hidden focus-within:ring-2 focus-within:ring-accent/50 transition-all">

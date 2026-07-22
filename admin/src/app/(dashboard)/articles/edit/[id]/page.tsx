@@ -26,33 +26,40 @@ export default function EditArticlePage() {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
+    if (!id) return;
+
     const fetchData = async () => {
       try {
         const [articleRes, catRes] = await Promise.all([
           api.get(`/articles/admin/${id}`),
-          api.get('/categories'),
+          api.get('/categories').catch(() => ({ data: { success: false, data: [] } })),
         ]);
 
-        const a = articleRes.data.data;
-        setTitle(a.title || '');
-        setExcerpt(a.excerpt || '');
-        setContent(a.content || { type: 'doc', content: [] });
-        setCategoryId(a.category?._id || a.category || '');
-        setCoverImageUrl(a.coverImage?.url || '');
-        setIsFactCheck(!!a.factCheck);
-        setIsFeatured(!!a.featured);
-        setStatus(a.status || 'draft');
+        const a = articleRes.data?.data;
+        if (a) {
+          setTitle(a.title || '');
+          setExcerpt(a.excerpt || '');
+          setContent(a.content || { type: 'doc', content: [] });
+          setCategoryId(a.category?._id || a.category || '');
+          setCoverImageUrl(a.coverImage?.url || '');
+          setIsFactCheck(!!a.factCheck);
+          setIsFeatured(!!a.featured);
+          setStatus(a.status || 'draft');
+        } else {
+          toast.error('Article not found.');
+          router.push('/articles');
+        }
 
-        if (catRes.data.success) setCategories(catRes.data.data || []);
-      } catch (err) {
+        if (catRes.data?.success) setCategories(catRes.data.data || []);
+      } catch (err: any) {
+        console.error('Fetch article error:', err);
         toast.error('Failed to load article.');
-        router.push('/articles');
       } finally {
         setLoading(false);
       }
     };
     fetchData();
-  }, [id]);
+  }, [id, router]);
 
   const handleSave = async (newStatus: 'draft' | 'published') => {
     if (!title.trim()) { toast.error('Title is required'); return; }

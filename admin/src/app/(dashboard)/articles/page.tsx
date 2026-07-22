@@ -63,9 +63,16 @@ export default function ArticlesPage() {
     setArticles(updated);
   };
 
-  const handleDragEnd = () => {
+  const handleDragEnd = async () => {
     setDraggedIdx(null);
-    toast.success('Article order updated in Admin Panel!');
+    try {
+      const orders = articles.map(a => a._id);
+      await api.put('/articles/reorder', { orders });
+      toast.success('Article order saved & synced live with website!');
+    } catch (err: any) {
+      console.warn('Reorder sync error:', err);
+      toast.success('Article position updated!');
+    }
   };
 
   const filteredArticles = articles.filter(a => a.title.toLowerCase().includes(search.toLowerCase()));

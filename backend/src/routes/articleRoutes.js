@@ -6,6 +6,7 @@ const ctrl = require('../controllers/articleController');
 // Admin/editor routes (must be before wildcard /:slug)
 router.get('/admin/all', protect, restrictTo('admin', 'editor'), ctrl.getAllArticles);
 router.get('/admin/:id', protect, restrictTo('admin', 'editor'), ctrl.getArticleById);
+router.put('/reorder', protect, restrictTo('admin', 'editor'), ctrl.reorderArticles);
 
 // Public routes
 router.get('/', ctrl.getPublishedArticles);

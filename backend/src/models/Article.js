@@ -68,6 +68,7 @@ const articleSchema = new mongoose.Schema(
     trending: { type: Boolean, default: false },
     editorsPick: { type: Boolean, default: false },
     factCheck: { type: Boolean, default: false },
+    order: { type: Number, default: 0 },
     readingTime: { type: Number, default: 1 },
     views: { type: Number, default: 0 },
     seo: {

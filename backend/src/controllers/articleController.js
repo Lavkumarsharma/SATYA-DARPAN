@@ -13,7 +13,7 @@ const POPULATE_ARTICLE = [
 // GET /api/articles — public paginated list (only published)
 exports.getPublishedArticles = asyncHandler(async (req, res) => {
   const {
-    page = 1, limit = 12, category, tags, sort = '-publishedAt',
+    page = 1, limit = 12, category, tags, sort = 'order -publishedAt',
     featured, factCheck, search,
   } = req.query;
 
@@ -58,7 +58,7 @@ exports.getPublishedArticles = asyncHandler(async (req, res) => {
 
 // GET /api/articles/admin — admin list (all statuses)
 exports.getAllArticles = asyncHandler(async (req, res) => {
-  const { page = 1, limit = 20, status, category, author, sort = '-createdAt', search } = req.query;
+  const { page = 1, limit = 50, status, category, author, sort = 'order -createdAt', search } = req.query;
   const filter = {};
   if (status) filter.status = status;
   if (category) filter.category = category;
@@ -245,4 +245,25 @@ exports.getRelatedArticles = asyncHandler(async (req, res, next) => {
   }).populate(POPULATE_ARTICLE).limit(4).lean();
 
   res.status(200).json({ success: true, data: related });
+});
+
+// PUT /api/articles/reorder — admin bulk update article order sequence
+exports.reorderArticles = asyncHandler(async (req, res, next) => {
+  const { orders } = req.body;
+  if (!Array.isArray(orders)) {
+    return next(new AppError('Orders array is required', 400));
+  }
+
+  const bulkOps = orders.map((id, index) => ({
+    updateOne: {
+      filter: { _id: id },
+      update: { order: index },
+    },
+  }));
+
+  if (bulkOps.length > 0) {
+    await Article.bulkWrite(bulkOps);
+  }
+
+  res.status(200).json({ success: true, message: 'Articles reordered and synced successfully' });
 });

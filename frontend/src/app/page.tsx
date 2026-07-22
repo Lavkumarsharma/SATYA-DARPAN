@@ -228,7 +228,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── RECENT ARTICLES (Dynamic from DB with Drag & Drop Reordering) ────────────────────────────── */}
+      {/* ── RECENT ARTICLES (Dynamic from DB) ────────────────────────────── */}
       <section className="py-24 px-6 max-w-7xl mx-auto relative z-20">
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 border-b border-border pb-6">
           <div>
@@ -237,7 +237,7 @@ export default function Home() {
               <Eye className="w-8 h-8 text-accent animate-pulse" />
               मुख्य अन्वेषण और हालिया खुलासे ({articles.length})
             </h2>
-            <p className="text-text-muted text-sm">वे दस्तावेज़, वित्तीय साक्ष्य और तथ्य जिन्हें जनता के सामने लाना आवश्यक है। (Drag cards to reorder view)</p>
+            <p className="text-text-muted text-sm">वे दस्तावेज़, वित्तीय साक्ष्य और तथ्य जिन्हें जनता के सामने लाना आवश्यक है।</p>
           </div>
           <Link href="/timeline" className="hidden md:flex items-center gap-2 text-accent font-bold hover:underline underline-offset-4 text-sm">
             View the Investigation Timeline <TrendingUp className="w-4 h-4" />
@@ -246,36 +246,24 @@ export default function Home() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {articles.map((article: any, i: number) => (
-            <div
+            <Link
               key={article._id || article.slug || i}
-              draggable
-              onDragStart={(e) => handleCardDragStart(e, i)}
-              onDragOver={(e) => handleCardDragOver(e, i)}
-              onDragEnd={handleCardDragEnd}
-              className={`group flex flex-col bg-surface rounded border transition-all duration-300 relative ${
-                draggedCardIdx === i
-                  ? 'border-accent ring-2 ring-accent/30 scale-[1.02] shadow-2xl z-30 opacity-90'
-                  : 'border-border hover:border-accent/50 hover:shadow-2xl hover:shadow-accent/5'
-              }`}
+              href={`/article/${article.slug}`}
+              className="group flex flex-col bg-surface rounded border border-border overflow-hidden hover:border-accent/50 hover:shadow-2xl hover:shadow-accent/5 transition-all duration-300"
             >
               <div className="relative h-56 overflow-hidden">
-                <Link href={`/article/${article.slug}`}>
-                  <img
-                    src={resolveImageUrl(article.coverImage?.url)}
-                    alt={article.title}
-                    className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
-                  />
-                </Link>
-                <div className="absolute top-3 left-3 z-20 flex items-center gap-2">
-                  <div className="p-1.5 bg-background/90 backdrop-blur-sm text-text-muted hover:text-white rounded border border-border cursor-grab active:cursor-grabbing shadow-sm" title="Drag to reorder card position">
-                    <GripVertical className="w-3.5 h-3.5 text-accent" />
-                  </div>
+                <img
+                  src={resolveImageUrl(article.coverImage?.url)}
+                  alt={article.title}
+                  className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-700"
+                />
+                <div className="absolute top-4 left-4 z-20">
                   <span className="px-3 py-1 bg-background/90 backdrop-blur-sm text-text text-[10px] font-black uppercase tracking-wider rounded border border-border">
                     {article.category?.name || article.category || ''}
                   </span>
                 </div>
               </div>
-              <Link href={`/article/${article.slug}`} className="p-6 flex-1 flex flex-col justify-between">
+              <div className="p-6 flex-1 flex flex-col justify-between">
                 <div className="space-y-3">
                   <h3 className="text-lg font-bold font-playfair text-text leading-snug group-hover:text-accent transition-colors line-clamp-2">
                     {article.title}
@@ -291,8 +279,8 @@ export default function Home() {
                     Read Report <ChevronRight className="w-3 h-3 ml-1" />
                   </span>
                 </div>
-              </Link>
-            </div>
+              </div>
+            </Link>
           ))}
         </div>
       </section>

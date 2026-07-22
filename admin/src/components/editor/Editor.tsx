@@ -24,10 +24,9 @@ import {
   List, 
   ListOrdered,
   Paintbrush,
-  Upload,
   RefreshCw
 } from 'lucide-react';
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import api from '@/lib/api';
 import { toast } from 'react-hot-toast';
 
@@ -94,7 +93,7 @@ const MenuBar = ({ editor }: { editor: any }) => {
     const previousUrl = editor.getAttributes('link').href;
     const url = window.prompt('Enter link URL:', previousUrl);
     
-    if (url === null) return; // cancelled
+    if (url === null) return;
     if (url === '') {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
       return;
@@ -102,7 +101,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   }, [editor]);
 
-  // Pre-defined color options for text color
   const textColors = [
     { name: 'Red', value: '#ef4444' },
     { name: 'Yellow', value: '#f59e0b' },
@@ -112,7 +110,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
     { name: 'Reset', value: '' }
   ];
 
-  // Pre-defined highlight backgrounds
   const highlightColors = [
     { name: 'Red', value: '#fef2f2' },
     { name: 'Yellow', value: '#fef9c3' },
@@ -123,8 +120,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
   return (
     <div className="flex flex-wrap items-center gap-1 p-2 bg-surface border-b border-border rounded-t-xl sticky top-0 z-10">
-      
-      {/* Hidden File Input for Direct Upload */}
       <input
         type="file"
         ref={fileInputRef}
@@ -133,7 +128,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         className="hidden"
       />
 
-      {/* Bold */}
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBold().run()}
@@ -143,7 +137,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <Bold className="w-4 h-4" />
       </button>
 
-      {/* Italic */}
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleItalic().run()}
@@ -153,7 +146,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <Italic className="w-4 h-4" />
       </button>
 
-      {/* Underline */}
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleUnderline().run()}
@@ -163,7 +155,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <UnderlineIcon className="w-4 h-4" />
       </button>
 
-      {/* Strikethrough */}
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleStrike().run()}
@@ -175,7 +166,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
       <div className="w-px h-6 bg-border mx-1" />
 
-      {/* Heading 2 */}
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
@@ -185,7 +175,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         H2
       </button>
 
-      {/* Heading 3 */}
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()}
@@ -195,7 +184,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         H3
       </button>
 
-      {/* Quote */}
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBlockquote().run()}
@@ -207,7 +195,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
       <div className="w-px h-6 bg-border mx-1" />
 
-      {/* Bullet List */}
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleBulletList().run()}
@@ -217,7 +204,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <List className="w-4 h-4" />
       </button>
 
-      {/* Ordered List */}
       <button
         type="button"
         onClick={() => editor.chain().focus().toggleOrderedList().run()}
@@ -229,7 +215,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
       <div className="w-px h-6 bg-border mx-1" />
 
-      {/* Text Color Picker Selector */}
       <div className="flex items-center gap-1 border border-border rounded-lg p-0.5 bg-background/50" title="Text Color">
         <Paintbrush className="w-3.5 h-3.5 text-text-muted ml-1.5" />
         <select
@@ -253,7 +238,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         </select>
       </div>
 
-      {/* Highlight Background Picker Selector */}
       <div className="flex items-center gap-1 border border-border rounded-lg p-0.5 bg-background/50" title="Highlight Color">
         <Highlighter className="w-3.5 h-3.5 text-text-muted ml-1.5" />
         <select
@@ -279,7 +263,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
 
       <div className="w-px h-6 bg-border mx-1" />
 
-      {/* Link */}
       <button 
         type="button"
         onClick={setLink} 
@@ -289,7 +272,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <LinkIcon className="w-4 h-4" />
       </button>
 
-      {/* DIRECT IMAGE FILE UPLOAD BUTTON */}
       <button 
         type="button"
         onClick={() => fileInputRef.current?.click()} 
@@ -305,7 +287,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         <span>{uploading ? 'Uploading...' : 'Insert Image'}</span>
       </button>
 
-      {/* Secondary URL Option */}
       <button 
         type="button"
         onClick={addImageByUrl} 
@@ -315,7 +296,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
         URL
       </button>
 
-      {/* YouTube Video */}
       <button 
         type="button"
         onClick={addYoutube} 
@@ -327,32 +307,6 @@ const MenuBar = ({ editor }: { editor: any }) => {
     </div>
   );
 };
-
-// Helper for drop / paste upload
-async function uploadAndInsertImageFile(file: File, editor: any) {
-  try {
-    toast.loading('Uploading dropped/pasted image...', { id: 'editor-drop-upload' });
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const res = await api.post('/media/upload', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-    });
-
-    let url = res.data.data?.url;
-    if (url) {
-      if (!url.startsWith('http')) {
-        const API_HOST = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
-        const baseHost = API_HOST.replace(/\/api\/?$/, '');
-        url = `${baseHost}${url}`;
-      }
-      editor.chain().focus().setImage({ src: url }).run();
-      toast.success('Image inserted!', { id: 'editor-drop-upload' });
-    }
-  } catch (err: any) {
-    toast.error(err.response?.data?.message || err.message || 'Image upload failed', { id: 'editor-drop-upload' });
-  }
-}
 
 export default function AdvancedEditor({ content, onChange }: EditorProps) {
   const editor = useEditor({
@@ -367,42 +321,31 @@ export default function AdvancedEditor({ content, onChange }: EditorProps) {
       Color,
       Placeholder.configure({ placeholder: 'Start writing your investigation...' }),
     ],
-    content,
+    content: content || { type: 'doc', content: [] },
     editorProps: {
       attributes: {
         class: 'prose prose-lg dark:prose-invert prose-headings:font-playfair prose-headings:font-bold prose-p:font-inter prose-a:text-accent focus:outline-none min-h-[500px] py-6 px-4',
-      },
-      handleDrop: (view, event, slice, moved) => {
-        if (!moved && event.dataTransfer && event.dataTransfer.files && event.dataTransfer.files[0]) {
-          const file = event.dataTransfer.files[0];
-          if (file.type.startsWith('image/')) {
-            event.preventDefault();
-            // Get editor instance from view
-            uploadAndInsertImageFile(file, (view as any).editor || { chain: () => (view as any) });
-            return true;
-          }
-        }
-        return false;
-      },
-      handlePaste: (view, event) => {
-        const items = Array.from(event.clipboardData?.items || []);
-        for (const item of items) {
-          if (item.type.indexOf('image') === 0) {
-            const file = item.getAsFile();
-            if (file) {
-              event.preventDefault();
-              uploadAndInsertImageFile(file, (view as any).editor || { chain: () => (view as any) });
-              return true;
-            }
-          }
-        }
-        return false;
       },
     },
     onUpdate: ({ editor }) => {
       onChange(editor.getJSON());
     },
   });
+
+  // Sync content when loaded asynchronously from API
+  useEffect(() => {
+    if (editor && content && !editor.isDestroyed) {
+      try {
+        const currentJSON = JSON.stringify(editor.getJSON());
+        const newJSON = JSON.stringify(content);
+        if (currentJSON !== newJSON) {
+          editor.commands.setContent(content, false);
+        }
+      } catch (err) {
+        console.error('Failed to set editor content:', err);
+      }
+    }
+  }, [editor, content]);
 
   return (
     <div className="border border-border rounded-xl bg-background overflow-hidden focus-within:ring-2 focus-within:ring-accent/50 transition-all">

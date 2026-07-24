@@ -12,50 +12,6 @@ interface SearchModalProps {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://satya-darpan.onrender.com/api';
 
-// Fail-safe articles list so search ALWAYS works even if backend is offline/slow
-const FALLBACK_ARTICLES = [
-  {
-    _id: 'jantar-mantar-student-protest-lathi-charge-dharmendra-pradhan-neet',
-    slug: 'jantar-mantar-student-protest-lathi-charge-dharmendra-pradhan-neet',
-    title: 'Jantar Mantar Chalo: Dharmendra Pradhan Ke Istife Aur NEET Bhrashtachar Par Chhatro Par Police Lathi Charge Ka Poora Sach',
-    excerpt: '20 July ko Jantar Mantar par NEET-UG rigging aur UGC-NET paper leak ke khilaf rashtriya chhatra andolan par lathi charge, 118 police, 80+ chhatra ghayal, 5 FIR aur Sansad March ki OSINT jaanch.',
-    category: { name: 'OSINT Investigation' },
-    publishedAt: new Date('2026-07-20').toISOString(),
-  },
-  {
-    _id: 'pm-cares-fund-osint-investigation-rti-cag-audit-reality',
-    slug: 'pm-cares-fund-osint-investigation-rti-cag-audit-reality',
-    title: 'PM CARES Fund Ka Khulasa: CAG Audit Se Chhoot, RTI Se Inkaar Aur ₹2,000 Crore Ventilator Kharid Ka Sach',
-    excerpt: 'Supreme Court ruling CPIL v. UOI, SARC & Associates audit report, RTI Section 2(h) non-disclosure, FCRA exemption aur ventilator failure data ki 4-page sachai forensic investigation.',
-    category: { name: 'Expose' },
-    publishedAt: new Date('2026-07-21').toISOString(),
-  },
-  {
-    _id: 'electoral-bonds-scam-truth',
-    slug: 'electoral-bonds-scam-truth',
-    title: 'Electoral Bonds Scam: ₹1.85 Lakh Crore Ka Sach',
-    excerpt: 'Supreme Court ke faisle ke baad Electoral Bonds scheme ke khatme se jo data saamne aaya hai, wo ek khatraanak sach chhupa raha tha.',
-    category: { name: 'Bhrashtachar' },
-    publishedAt: new Date('2024-03-15').toISOString(),
-  },
-  {
-    _id: 'adani-hindenburg-full-truth',
-    slug: 'adani-hindenburg-full-truth',
-    title: 'Adani Group aur Hindenburg Report: Poora Sach Jo Media Ne Chhupaaya',
-    excerpt: 'January 2023 mein Hindenburg Research ne Adani Group par ek badi report publish ki. LIC aur SBI ka paisa khatrey mein tha.',
-    category: { name: 'Expose' },
-    publishedAt: new Date('2024-02-10').toISOString(),
-  },
-  {
-    _id: 'fact-check-india-5th-economy-reality',
-    slug: 'fact-check-india-5th-economy-reality',
-    title: 'Fact Check: "India 5th Largest Economy" — Kya Yeh Aam Admi Ki Jeb Mein Bhi Dikhta Hai?',
-    excerpt: 'Government baar baar kehti hai India 5th largest economy ban gaya. Lekin GDP growth se common man ka kya fayda?',
-    category: { name: 'Fact Check' },
-    publishedAt: new Date('2024-04-01').toISOString(),
-  },
-];
-
 export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
@@ -80,77 +36,25 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
   }, [isOpen, onClose]);
 
   useEffect(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) {
+    if (!query.trim()) {
       setResults([]);
       return;
     }
 
     const timer = setTimeout(async () => {
-      setLoading(true);
-      let fetchedResults: any[] = [];
-
-      // 1. Try Backend Search API
       try {
+        setLoading(true);
         const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query.trim())}`);
         if (res.ok) {
           const json = await res.json();
-          if (json.data && Array.isArray(json.data) && json.data.length > 0) {
-            fetchedResults = json.data;
-          }
+          setResults(json.data || []);
         }
       } catch (err) {
-        console.warn('Backend search API unreachable, falling back to direct articles fetch & local filter');
+        console.error('Search query error:', err);
+      } finally {
+        setLoading(false);
       }
-
-      // Helper for bilingual search term expansion (Hindi <-> English)
-      const TRANSLITERATIONS = [
-        { en: ['jantar mantar', 'protest', 'lathi charge', 'dharmendra pradhan', 'neet'], hi: ['जंतर मंतर', 'प्रदर्शन', 'लाठीचार्ज', 'धर्मेंद्र प्रधान', 'नीट'] },
-        { en: ['pm cares', 'pm cares fund', 'cag', 'rti', 'ventilator'], hi: ['पीएम केयर्स', 'पीएम केअर', 'सीएजी', 'आरटीआई', 'वेंटिलेटर'] },
-        { en: ['electoral bonds', 'bond', 'bjp', 'supreme court'], hi: ['इलेक्टोरल बॉन्ड्स', 'चुनावी बॉन्ड', 'सुप्रीम कोर्ट'] },
-        { en: ['adani', 'hindenburg', 'lic', 'sbi'], hi: ['अडानी', 'हिंडनबर्ग', 'एलआईसी', 'एसबीआई'] },
-        { en: ['economy', 'gdp', 'unemployment'], hi: ['अर्थव्यवस्था', 'जीडीपी', 'बेरोजगारी'] },
-      ];
-
-      const searchTerms = new Set<string>([q]);
-      for (const group of TRANSLITERATIONS) {
-        const matchEn = group.en.some(t => q.includes(t) || t.includes(q));
-        const matchHi = group.hi.some(t => q.includes(t) || t.includes(q));
-        if (matchEn || matchHi) {
-          group.en.forEach(t => searchTerms.add(t));
-          group.hi.forEach(t => searchTerms.add(t));
-        }
-      }
-
-      const matchItem = (item: any) => {
-        const title = (item.title || '').toLowerCase();
-        const excerpt = (item.excerpt || '').toLowerCase();
-        const cat = (item.category?.name || item.category || '').toLowerCase();
-        return Array.from(searchTerms).some(term => title.includes(term) || excerpt.includes(term) || cat.includes(term));
-      };
-
-      // 2. If search API returned no results or failed, try fetching published articles from /articles
-      if (fetchedResults.length === 0) {
-        try {
-          const res = await fetch(`${API_URL}/articles?limit=100`);
-          if (res.ok) {
-            const json = await res.json();
-            const allArticles = json.data || [];
-            fetchedResults = allArticles.filter(matchItem);
-          }
-        } catch (err) {
-          console.warn('Backend articles API error:', err);
-        }
-      }
-
-      // 3. Fail-safe local match from FALLBACK_ARTICLES if still empty
-      if (fetchedResults.length === 0) {
-        fetchedResults = FALLBACK_ARTICLES.filter(matchItem);
-      }
-
-      setResults(fetchedResults);
-      setLoading(false);
-    }, 250);
+    }, 300);
 
     return () => clearTimeout(timer);
   }, [query]);
@@ -220,7 +124,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           ) : (
             results.map((item: any, i: number) => (
               <Link
-                key={item._id || item.slug || i}
+                key={item._id || i}
                 href={`/article/${item.slug}`}
                 onClick={onClose}
                 className="group flex items-start gap-4 p-4 rounded-xl border border-border bg-background/50 hover:bg-surface hover:border-accent/40 transition-all duration-200"
@@ -237,7 +141,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="px-2 py-0.5 bg-accent/10 border border-accent/20 text-accent text-[10px] font-bold uppercase rounded">
-                      {item.category?.name || item.category || 'Investigation'}
+                      {item.category?.name || 'Investigation'}
                     </span>
                     {item.publishedAt && (
                       <span className="text-[10px] text-text-muted flex items-center gap-1">
@@ -246,7 +150,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
                       </span>
                     )}
                   </div>
-                  <h4 className="text-base font-bold font-playfair text-text group-hover:text-accent transition-colors line-clamp-2">
+                  <h4 className="text-base font-bold font-playfair text-text group-hover:text-accent transition-colors line-clamp-1">
                     {item.title}
                   </h4>
                   <p className="text-xs text-text-muted line-clamp-2 mt-1 leading-relaxed">

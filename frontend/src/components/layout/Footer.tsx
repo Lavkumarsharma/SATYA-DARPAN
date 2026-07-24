@@ -12,41 +12,41 @@ export default function Footer() {
               <span className="text-xl font-playfair font-bold text-text">सत्यदर्पण</span>
             </Link>
             <p className="text-text-muted text-sm leading-relaxed mb-6">
-              सत्य, पारदर्शिता और जनहित को समर्पित एक प्रमुख निष्पक्ष अन्वेषणात्मक पत्रकारिता एवं साक्ष्य प्रकाशन मंच।
+              A premium investigative journalism and political evidence publishing platform dedicated to truth and transparency.
             </p>
           </div>
           
           <div>
-            <h4 className="font-semibold text-text mb-4">प्लेटफॉर्म</h4>
+            <h4 className="font-semibold text-text mb-4">Platform</h4>
             <ul className="space-y-3 text-sm text-text-muted">
-              <li><Link href="/about" className="hover:text-accent transition-colors">हमारे बारे में</Link></li>
-              <li><Link href="/authors" className="hover:text-accent transition-colors">हमारे लेखक</Link></li>
-              <li><Link href="/timeline" className="hover:text-accent transition-colors">राजनीतिक टाइमलाइन</Link></li>
-              <li><Link href="/fact-checks" className="hover:text-accent transition-colors">फैक्ट चेक</Link></li>
+              <li><Link href="/about" className="hover:text-accent transition-colors">About Us</Link></li>
+              <li><Link href="/authors" className="hover:text-accent transition-colors">Our Authors</Link></li>
+              <li><Link href="/timeline" className="hover:text-accent transition-colors">Political Timeline</Link></li>
+              <li><Link href="/fact-checks" className="hover:text-accent transition-colors">Fact Checks</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold text-text mb-4">कानूनी व नीति</h4>
+            <h4 className="font-semibold text-text mb-4">Legal</h4>
             <ul className="space-y-3 text-sm text-text-muted">
-              <li><Link href="/privacy" className="hover:text-accent transition-colors">गोपनीयता नीति</Link></li>
-              <li><Link href="/terms" className="hover:text-accent transition-colors">सेवा की शर्तें</Link></li>
-              <li><Link href="/ethics" className="hover:text-accent transition-colors">आचार संहिता</Link></li>
-              <li><Link href="/contact" className="hover:text-accent transition-colors">संपर्क करें</Link></li>
+              <li><Link href="/privacy" className="hover:text-accent transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-accent transition-colors">Terms of Service</Link></li>
+              <li><Link href="/ethics" className="hover:text-accent transition-colors">Ethics Policy</Link></li>
+              <li><Link href="/contact" className="hover:text-accent transition-colors">Contact Us</Link></li>
             </ul>
           </div>
 
           <div>
-            <h4 className="font-semibold text-text mb-4">न्यूज़लेटर</h4>
-            <p className="text-sm text-text-muted mb-4">नवीनतम अन्वेषण और खुलासे सीधे अपने ईमेल पर प्राप्त करें।</p>
+            <h4 className="font-semibold text-text mb-4">Newsletter</h4>
+            <p className="text-sm text-text-muted mb-4">Get the latest investigations delivered to your inbox.</p>
             <form className="flex">
               <input
                 type="email"
-                placeholder="अपना ईमेल दर्ज करें"
+                placeholder="Email address"
                 className="w-full px-4 py-2 rounded-l-lg border border-border bg-background text-sm focus:outline-none focus:ring-1 focus:ring-accent"
               />
               <button className="px-4 py-2 bg-accent text-white rounded-r-lg text-sm font-medium hover:bg-accent/90 transition-colors">
-                सब्सक्राइब
+                Subscribe
               </button>
             </form>
           </div>
@@ -54,11 +54,11 @@ export default function Footer() {
         
         <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-text-muted">
-            © {new Date().getFullYear()} सत्यदर्पण। सर्वाधिकार सुरक्षित।
+            © {new Date().getFullYear()} SatyaDarpan. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-sm text-text-muted">
-            <Link href="/rss.xml" className="hover:text-accent transition-colors">आरएसएस फीड</Link>
-            <Link href="/sitemap.xml" className="hover:text-accent transition-colors">साइटमैप</Link>
+            <Link href="/rss.xml" className="hover:text-accent transition-colors">RSS Feed</Link>
+            <Link href="/sitemap.xml" className="hover:text-accent transition-colors">Sitemap</Link>
           </div>
         </div>
       </div>

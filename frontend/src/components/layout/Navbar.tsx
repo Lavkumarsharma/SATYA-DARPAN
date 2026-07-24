@@ -5,7 +5,6 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Search, Menu, X, Eye } from 'lucide-react';
 import SearchModal from '@/components/SearchModal';
-import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -53,18 +52,13 @@ export default function Navbar() {
 
           {/* Nav links */}
           <nav className="hidden md:flex items-center gap-8">
-            {[
-              { label: 'मुख्य पृष्ठ', path: '/' },
-              { label: 'श्रेणियां', path: '/categories' },
-              { label: 'फैक्ट चेक', path: '/fact-checks' },
-              { label: 'टाइमलाइन', path: '/timeline' },
-              { label: 'हमारे बारे में', path: '/about' },
-            ].map((item) => {
-              const isActive = pathname === item.path;
+            {['Home', 'Categories', 'Fact Checks', 'Timeline', 'About'].map((item) => {
+              const itemPath = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`;
+              const isActive = pathname === itemPath;
               return (
                 <Link
-                  key={item.label}
-                  href={item.path}
+                  key={item}
+                  href={itemPath}
                   className={`text-[11px] uppercase tracking-widest font-black relative py-1.5 group transition-colors duration-200 ${
                     isActive
                       ? 'text-accent'
@@ -73,7 +67,7 @@ export default function Navbar() {
                         : 'text-white/70 hover:text-white'
                   }`}
                 >
-                  {item.label}
+                  {item}
                   <span
                     className={`absolute bottom-0 left-0 h-[2px] w-full bg-accent origin-left transition-transform duration-300 ${
                       isActive ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
@@ -85,12 +79,10 @@ export default function Navbar() {
           </nav>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-3">
-            {/* Search button */}
-
+          <div className="flex items-center gap-2">
             <button
               onClick={() => setSearchOpen(true)}
-              aria-label="खोजें"
+              aria-label="Search"
               className={`p-2 rounded border transition-all duration-200 ${
                 solid
                   ? 'text-text border-border hover:border-accent/50 hover:text-accent hover:bg-accent/5'
@@ -101,7 +93,7 @@ export default function Navbar() {
             </button>
 
             <button
-              aria-label="मोबाइल मेनू"
+              aria-label="Mobile menu"
               className={`md:hidden p-2 rounded border transition-colors ${
                 solid
                   ? 'text-text border-border'
@@ -117,29 +109,20 @@ export default function Navbar() {
         {/* Mobile drawer */}
         {mobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-background/95 backdrop-blur-md border-t border-border shadow-lg">
-            <nav className="flex flex-col p-4 space-y-3">
-              <div className="pb-2 border-b border-border">
-                <span className="text-[10px] uppercase tracking-widest font-black text-text-muted block mb-2">भाषा चुनें</span>
-                <LanguageSwitcher isSolid={true} />
-              </div>
-              {[
-                { label: 'मुख्य पृष्ठ', path: '/' },
-                { label: 'श्रेणियां', path: '/categories' },
-                { label: 'फैक्ट चेक', path: '/fact-checks' },
-                { label: 'टाइमलाइन', path: '/timeline' },
-                { label: 'हमारे बारे में', path: '/about' },
-              ].map((item) => {
-                const isActive = pathname === item.path;
+            <nav className="flex flex-col p-4">
+              {['Home', 'Categories', 'Fact Checks', 'Timeline', 'About'].map((item) => {
+                const itemPath = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`;
+                const isActive = pathname === itemPath;
                 return (
                   <Link
-                    key={item.label}
-                    href={item.path}
-                    className={`px-4 py-2 text-sm font-bold tracking-widest uppercase transition-colors rounded ${
-                      isActive ? 'text-accent bg-accent/10' : 'text-text hover:bg-white/5'
+                    key={item}
+                    href={itemPath}
+                    className={`px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors ${
+                      isActive ? 'text-accent' : 'text-text hover:bg-white/5'
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {item.label}
+                    {item}
                   </Link>
                 );
               })}

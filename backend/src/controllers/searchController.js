@@ -5,44 +5,17 @@ const { asyncHandler } = require('../middleware/errorHandler');
 exports.search = asyncHandler(async (req, res) => {
   const {
     q, category, tags, year, author,
-    sort = 'newest', page = 1, limit = 20,
+    sort = 'relevance', page = 1, limit = 12,
   } = req.query;
 
   const filter = { status: 'published' };
 
   if (q && q.trim()) {
-    const rawQuery = q.trim();
-    const queryLower = rawQuery.toLowerCase();
-    
-    // Transliteration dictionary map for Hindi <-> English terms
-    const TRANSLITERATIONS = [
-      { en: ['jantar mantar', 'protest', 'lathi charge', 'dharmendra pradhan', 'neet'], hi: ['जंतर मंतर', 'प्रदर्शन', 'लाठीचार्ज', 'धर्मेंद्र प्रधान', 'नीट'] },
-      { en: ['pm cares', 'pm cares fund', 'cag', 'rti', 'ventilator'], hi: ['पीएम केयर्स', 'पीएम केयर', 'सीएजी', 'आरटीआई', 'वेंटिलेटर'] },
-      { en: ['electoral bonds', 'bond', 'bjp', 'supreme court'], hi: ['इलेक्टोरल बॉन्ड्स', 'चुनावी बॉन्ड', 'सुप्रीम कोर्ट'] },
-      { en: ['adani', 'hindenburg', 'lic', 'sbi'], hi: ['अडानी', 'हिंडनबर्ग', 'एलआईसी', 'एसबीआई'] },
-      { en: ['economy', 'gdp', 'unemployment'], hi: ['अर्थव्यवस्था', 'जीडीपी', 'बेरोजगारी'] },
+    const regex = new RegExp(q.trim(), 'i');
+    filter.$or = [
+      { title: regex },
+      { excerpt: regex },
     ];
-
-    const matchingTerms = new Set([rawQuery]);
-
-    for (const group of TRANSLITERATIONS) {
-      const matchEn = group.en.some(t => queryLower.includes(t) || t.includes(queryLower));
-      const matchHi = group.hi.some(t => rawQuery.includes(t) || t.includes(rawQuery));
-      if (matchEn || matchHi) {
-        group.en.forEach(t => matchingTerms.add(t));
-        group.hi.forEach(t => matchingTerms.add(t));
-      }
-    }
-
-    const orConditions = [];
-    matchingTerms.forEach(term => {
-      const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-      const regex = new RegExp(escaped, 'i');
-      orConditions.push({ title: regex });
-      orConditions.push({ excerpt: regex });
-    });
-
-    filter.$or = orConditions;
   }
   if (category) filter.category = category;
   if (tags) filter.tags = { $in: tags.split(',') };
@@ -53,14 +26,15 @@ exports.search = asyncHandler(async (req, res) => {
     filter.publishedAt = { $gte: startOfYear, $lt: endOfYear };
   }
 
-  let sortOption = 'order -publishedAt -createdAt';
+  let sortOption = '-publishedAt';
   if (sort === 'oldest') sortOption = 'publishedAt';
   else if (sort === 'popular') sortOption = '-views';
+  else if (sort === 'relevance' && q) sortOption = { score: { $meta: 'textScore' } };
 
   const skip = (Number(page) - 1) * Number(limit);
 
   const [articles, total] = await Promise.all([
-    Article.find(filter)
+    Article.find(filter, q ? { score: { $meta: 'textScore' } } : undefined)
       .populate('author', 'name avatar')
       .populate('category', 'name slug color icon')
       .populate('tags', 'name slug color')

@@ -18,7 +18,7 @@ export default function LanguageSwitcher({ isSolid = true }: { isSolid?: boolean
     if (match) {
       const langVal = decodeURIComponent(match[1]);
       if (langVal.endsWith('/en')) setCurrentLang('en');
-      else if (langVal.endsWith('/hi')) setCurrentLang('hi');
+      else setCurrentLang('hi');
     }
 
     // Google Translate init callback
@@ -26,7 +26,7 @@ export default function LanguageSwitcher({ isSolid = true }: { isSolid?: boolean
       if (window.google && window.google.translate) {
         new window.google.translate.TranslateElement(
           {
-            pageLanguage: 'auto',
+            pageLanguage: 'hi',
             includedLanguages: 'hi,en',
             layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
             autoDisplay: false,
@@ -50,40 +50,66 @@ export default function LanguageSwitcher({ isSolid = true }: { isSolid?: boolean
     if (currentLang === lang) return;
     setCurrentLang(lang);
 
-    const googTransVal = lang === 'en' ? '/hi/en' : '/hi/hi';
     const domain = window.location.hostname;
+    const parts = domain.split('.');
+    const rootDomain = domain.includes('.') ? '.' + parts.slice(-2).join('.') : domain;
 
-    // Set cookie for root path, host, and domain
-    document.cookie = `googtrans=${googTransVal}; path=/;`;
-    document.cookie = `googtrans=${googTransVal}; path=/; domain=${domain};`;
-    if (domain.includes('.')) {
-      const rootDomain = '.' + domain.split('.').slice(-2).join('.');
-      document.cookie = `googtrans=${googTransVal}; path=/; domain=${rootDomain};`;
+    if (lang === 'en') {
+      // Set cookies for English translation
+      const valEn = '/hi/en';
+      document.cookie = `googtrans=${valEn}; path=/;`;
+      document.cookie = `googtrans=${valEn}; path=/; domain=${domain};`;
+      if (rootDomain !== domain) {
+        document.cookie = `googtrans=${valEn}; path=/; domain=${rootDomain};`;
+      }
+      
+      const valAutoEn = '/auto/en';
+      document.cookie = `googtrans=${valAutoEn}; path=/;`;
+      document.cookie = `googtrans=${valAutoEn}; path=/; domain=${domain};`;
+    } else {
+      // Clear cookies for Hindi / Original
+      const valHi = '/hi/hi';
+      document.cookie = `googtrans=${valHi}; path=/;`;
+      document.cookie = `googtrans=${valHi}; path=/; domain=${domain};`;
+
+      document.cookie = 'googtrans=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
+      document.cookie = `googtrans=; path=/; domain=${domain}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+      if (rootDomain !== domain) {
+        document.cookie = `googtrans=; path=/; domain=${rootDomain}; expires=Thu, 01 Jan 1970 00:00:00 GMT;`;
+      }
     }
 
-    // Try finding Google Translate select box
+    // Try triggering select combo if present in DOM
     const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
     if (combo) {
       combo.value = lang;
       combo.dispatchEvent(new Event('change'));
-      // Fallback reload if page did not translate within 300ms
-      setTimeout(() => {
-        const isTranslated = document.documentElement.classList.contains('translated-ltr') || document.documentElement.classList.contains('translated-rtl');
-        if (!isTranslated && lang === 'en') {
-          window.location.reload();
-        }
-      }, 300);
-    } else {
-      window.location.reload();
     }
+
+    // Always reload page to ensure 100% clean Google Translate DOM application
+    setTimeout(() => {
+      window.location.reload();
+    }, 150);
   };
 
   return (
     <div className="relative flex items-center">
-      {/* Hidden Google Translate element */}
-      <div id="google_translate_element" className="hidden" />
+      {/* Google Translate target container - positioned off-screen so Google Translate script renders .goog-te-combo in DOM */}
+      <div
+        id="google_translate_element"
+        style={{
+          position: 'fixed',
+          top: -9999,
+          left: -9999,
+          opacity: 0,
+          pointerEvents: 'none',
+          width: '1px',
+          height: '1px',
+          overflow: 'hidden',
+        }}
+      />
 
-      {/* Styled Widget matching User Screenshot */}
+      {/* Styled Language Switcher Tabs */}
       <div
         className={`inline-flex items-center p-1 rounded-lg border transition-all duration-300 ${
           isSolid

@@ -9,7 +9,7 @@ declare global {
   }
 }
 
-export default function LanguageSwitcher() {
+export default function LanguageSwitcher({ isSolid = true }: { isSolid?: boolean }) {
   useEffect(() => {
     window.googleTranslateElementInit = () => {
       if (window.google && window.google.translate) {

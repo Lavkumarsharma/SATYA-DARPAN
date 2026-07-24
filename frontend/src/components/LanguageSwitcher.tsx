@@ -5,7 +5,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Globe, X, MoreVertical, Check, RefreshCw, Languages } from 'lucide-react';
 
 export default function LanguageSwitcher() {
-  const { currentLang, isLoaded, isLoading, error, switchLanguage, supportedLanguages } =
+  const { currentLang, isLoaded, isLoading, error, switchLanguage, retry, supportedLanguages } =
     useLanguage();
 
   const [isOpen, setIsOpen] = useState<boolean>(true);
@@ -109,12 +109,13 @@ export default function LanguageSwitcher() {
 
                 <button
                   onClick={() => {
-                    window.location.reload();
+                    retry();
+                    setIsMenuOpen(false);
                   }}
                   className="w-full text-left px-3 py-2 hover:bg-white/10 flex items-center gap-2 text-gray-400 hover:text-white transition-colors border-t border-white/5"
                 >
                   <RefreshCw className="w-3 h-3" />
-                  <span>Reload Page</span>
+                  <span>Reload Translator</span>
                 </button>
               </div>
             )}
@@ -136,7 +137,7 @@ export default function LanguageSwitcher() {
         <div className="px-3 py-2 bg-red-950/40 border-b border-red-500/20 text-red-300 text-[11px] flex items-center justify-between">
           <span>{error}</span>
           <button
-            onClick={() => switchLanguage(currentLang)}
+            onClick={retry}
             className="underline text-red-200 hover:text-white ml-2 font-medium"
           >
             Retry

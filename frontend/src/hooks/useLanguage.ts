@@ -5,9 +5,9 @@ import {
   initGoogleTranslateScript,
   changeLanguage,
   getStoredLanguage,
+  resetScriptLoader,
   DEFAULT_LANGUAGE,
   SUPPORTED_LANGUAGES,
-  LanguageOption,
 } from '@/lib/googleTranslate';
 
 export function useLanguage() {
@@ -16,65 +16,69 @@ export function useLanguage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Initialize language on mount
+  const init = useCallback(async (targetLang?: string) => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const langToUse = targetLang || getStoredLanguage();
+      setCurrentLang(langToUse);
+
+      await initGoogleTranslateScript();
+      setIsLoaded(true);
+
+      if (langToUse !== DEFAULT_LANGUAGE) {
+        await changeLanguage(langToUse);
+      }
+      setIsLoading(false);
+    } catch (err: any) {
+      console.error('Google Translate load error:', err);
+      setError(err?.message || 'Failed to load translation service');
+      setIsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     let isMounted = true;
 
-    const initialize = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
-        
-        const initialLang = getStoredLanguage();
-        if (isMounted) {
-          setCurrentLang(initialLang);
-        }
-
-        // Lazy load script
-        await initGoogleTranslateScript();
-
-        if (isMounted) {
-          setIsLoaded(true);
-          setIsLoading(false);
-
-          // If initial language is not English, trigger switch once loaded
-          if (initialLang !== DEFAULT_LANGUAGE) {
-            await changeLanguage(initialLang);
-          }
-        }
-      } catch (err: any) {
-        if (isMounted) {
-          console.error('Google Translate load error:', err);
-          setError(err?.message || 'Failed to load translation service');
-          setIsLoading(false);
-        }
-      }
-    };
-
-    initialize();
+    if (isMounted) {
+      init();
+    }
 
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [init]);
 
   const switchLanguage = useCallback(
     async (langCode: string) => {
-      if (langCode === currentLang) return;
-
       try {
         setIsLoading(true);
+        setError(null);
+
+        // If script hasn't loaded yet, try initializing script first
+        if (!isLoaded) {
+          resetScriptLoader();
+          await initGoogleTranslateScript();
+          setIsLoaded(true);
+        }
+
         setCurrentLang(langCode);
         await changeLanguage(langCode);
         setIsLoading(false);
       } catch (err: any) {
         console.error('Error switching language:', err);
-        setError('Translation switch failed');
+        setError(err?.message || 'Translation switch failed');
         setIsLoading(false);
       }
     },
-    [currentLang]
+    [isLoaded]
   );
+
+  const retry = useCallback(async () => {
+    resetScriptLoader();
+    await init(currentLang);
+  }, [init, currentLang]);
 
   return {
     currentLang,
@@ -82,6 +86,7 @@ export function useLanguage() {
     isLoading,
     error,
     switchLanguage,
+    retry,
     supportedLanguages: SUPPORTED_LANGUAGES,
   };
 }

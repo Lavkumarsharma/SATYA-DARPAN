@@ -52,7 +52,7 @@ export function setGoogtransCookie(langCode: string): void {
   document.cookie = `${GOOGTRANS_COOKIE_NAME}=${cookieVal}; path=/; max-age=31536000; SameSite=Lax`;
 
   // Handle subdomain / hostname root cookie clearing or setting
-  if (domain.includes('.')) {
+  if (domain && domain.includes('.')) {
     document.cookie = `${GOOGTRANS_COOKIE_NAME}=${cookieVal}; domain=.${domain}; path=/; max-age=31536000; SameSite=Lax`;
   }
 }
@@ -88,6 +88,17 @@ export function getStoredLanguage(): string {
 }
 
 /**
+ * Reset script loader state to allow retrying
+ */
+export function resetScriptLoader(): void {
+  scriptLoadingPromise = null;
+  if (typeof document !== 'undefined') {
+    const existing = document.getElementById('google-translate-script');
+    if (existing) existing.remove();
+  }
+}
+
+/**
  * Dynamically lazy-load Google Translate script with timeout & error handling
  */
 export function initGoogleTranslateScript(): Promise<boolean> {
@@ -102,7 +113,7 @@ export function initGoogleTranslateScript(): Promise<boolean> {
     return scriptLoadingPromise;
   }
 
-  scriptLoadingPromise = new Promise((resolve, reject) => {
+  scriptLoadingPromise = new Promise<boolean>((resolve, reject) => {
     // Check if element container exists or create one
     let targetEl = document.getElementById('google_translate_element');
     if (!targetEl) {
@@ -112,7 +123,7 @@ export function initGoogleTranslateScript(): Promise<boolean> {
       document.body.appendChild(targetEl);
     }
 
-    // Set window callback
+    // Define global callback before injecting script
     window.googleTranslateElementInit = () => {
       try {
         if (window.google?.translate?.TranslateElement) {
@@ -134,27 +145,47 @@ export function initGoogleTranslateScript(): Promise<boolean> {
       }
     };
 
-    // Create script element
+    // Remove old broken script tag if present
     const existingScript = document.getElementById('google-translate-script');
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.id = 'google-translate-script';
-      script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
-      script.async = true;
-      script.defer = true;
-
-      const timeout = setTimeout(() => {
-        reject(new Error('Google Translate script load timeout'));
-      }, 10000);
-
-      script.onload = () => clearTimeout(timeout);
-      script.onerror = (err) => {
-        clearTimeout(timeout);
-        reject(new Error('Google Translate script failed to load from network'));
-      };
-
-      document.head.appendChild(script);
+    if (existingScript) {
+      existingScript.remove();
     }
+
+    const script = document.createElement('script');
+    script.id = 'google-translate-script';
+    // Use explicit https URL to avoid protocol relative script loading failures
+    script.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+    script.async = true;
+    script.defer = true;
+
+    const timeout = setTimeout(() => {
+      resetScriptLoader();
+      reject(new Error('Google Translate script load timeout'));
+    }, 12000);
+
+    script.onload = () => {
+      clearTimeout(timeout);
+      // Fallback check if callback was missed
+      setTimeout(() => {
+        if (window.google?.translate?.TranslateElement) {
+          if (window.googleTranslateElementInit) {
+            window.googleTranslateElementInit();
+          }
+          resolve(true);
+        }
+      }, 500);
+    };
+
+    script.onerror = () => {
+      clearTimeout(timeout);
+      resetScriptLoader();
+      reject(new Error('Google Translate script failed to load from network'));
+    };
+
+    document.head.appendChild(script);
+  }).catch((err) => {
+    resetScriptLoader();
+    throw err;
   });
 
   return scriptLoadingPromise;
@@ -180,11 +211,26 @@ export function changeLanguage(langCode: string): Promise<boolean> {
     // 3. Add smooth fade class to body
     document.body.classList.add('gt-translating');
 
-    // 4. Try updating select element if present
-    const selectEl = document.querySelector<HTMLSelectElement>('.goog-te-combo');
-    if (selectEl) {
-      selectEl.value = langCode;
-      selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+    // 4. Update select element if present (or poll for a short window)
+    const updateCombo = () => {
+      const selectEl = document.querySelector<HTMLSelectElement>('.goog-te-combo');
+      if (selectEl) {
+        selectEl.value = langCode;
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      }
+      return false;
+    };
+
+    if (!updateCombo()) {
+      // Retry for up to 2 seconds if select box is still rendering
+      let attempts = 0;
+      const interval = setInterval(() => {
+        attempts++;
+        if (updateCombo() || attempts > 10) {
+          clearInterval(interval);
+        }
+      }, 200);
     }
 
     // 5. Restore opacity after translation completes

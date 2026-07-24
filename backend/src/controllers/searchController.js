@@ -5,13 +5,14 @@ const { asyncHandler } = require('../middleware/errorHandler');
 exports.search = asyncHandler(async (req, res) => {
   const {
     q, category, tags, year, author,
-    sort = 'relevance', page = 1, limit = 12,
+    sort = 'newest', page = 1, limit = 20,
   } = req.query;
 
   const filter = { status: 'published' };
 
   if (q && q.trim()) {
-    const regex = new RegExp(q.trim(), 'i');
+    const escaped = q.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(escaped, 'i');
     filter.$or = [
       { title: regex },
       { excerpt: regex },
@@ -26,15 +27,14 @@ exports.search = asyncHandler(async (req, res) => {
     filter.publishedAt = { $gte: startOfYear, $lt: endOfYear };
   }
 
-  let sortOption = '-publishedAt';
+  let sortOption = 'order -publishedAt -createdAt';
   if (sort === 'oldest') sortOption = 'publishedAt';
   else if (sort === 'popular') sortOption = '-views';
-  else if (sort === 'relevance' && q) sortOption = { score: { $meta: 'textScore' } };
 
   const skip = (Number(page) - 1) * Number(limit);
 
   const [articles, total] = await Promise.all([
-    Article.find(filter, q ? { score: { $meta: 'textScore' } } : undefined)
+    Article.find(filter)
       .populate('author', 'name avatar')
       .populate('category', 'name slug color icon')
       .populate('tags', 'name slug color')

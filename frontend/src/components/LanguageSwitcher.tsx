@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Languages, Globe } from 'lucide-react';
 
 declare global {
   interface Window {
@@ -12,40 +11,38 @@ declare global {
 
 export default function LanguageSwitcher({ isSolid = true }: { isSolid?: boolean }) {
   const [currentLang, setCurrentLang] = useState<'hi' | 'en'>('hi');
-  const [isLoaded, setIsLoaded] = useState(false);
 
   useEffect(() => {
     // Check initial cookie
     const match = document.cookie.match(/(?:^|; )googtrans=([^;]*)/);
     if (match) {
-      const langVal = match[1];
+      const langVal = decodeURIComponent(match[1]);
       if (langVal.endsWith('/en')) setCurrentLang('en');
-      else setCurrentLang('hi');
+      else if (langVal.endsWith('/hi')) setCurrentLang('hi');
     }
 
-    // Define Google Translate init callback
+    // Google Translate init callback
     window.googleTranslateElementInit = () => {
-      new window.google.translate.TranslateElement(
-        {
-          pageLanguage: 'hi',
-          includedLanguages: 'hi,en',
-          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: false,
-        },
-        'google_translate_element'
-      );
-      setIsLoaded(true);
+      if (window.google && window.google.translate) {
+        new window.google.translate.TranslateElement(
+          {
+            pageLanguage: 'auto',
+            includedLanguages: 'hi,en',
+            layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
+            autoDisplay: false,
+          },
+          'google_translate_element'
+        );
+      }
     };
 
-    // Load Google Translate script if not already present
+    // Load Google Translate script
     if (!document.getElementById('google-translate-script')) {
       const script = document.createElement('script');
       script.id = 'google-translate-script';
       script.src = '//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
       script.async = true;
       document.body.appendChild(script);
-    } else {
-      setIsLoaded(true);
     }
   }, []);
 
@@ -53,19 +50,29 @@ export default function LanguageSwitcher({ isSolid = true }: { isSolid?: boolean
     if (currentLang === lang) return;
     setCurrentLang(lang);
 
-    const googTransValue = lang === 'en' ? '/hi/en' : '/hi/hi';
+    const googTransVal = lang === 'en' ? '/hi/en' : '/hi/hi';
     const domain = window.location.hostname;
 
-    // Set cookie for path and domain
-    document.cookie = `googtrans=${googTransValue}; path=/;`;
-    document.cookie = `googtrans=${googTransValue}; path=/; domain=${domain};`;
-    document.cookie = `googtrans=${googTransValue}; path=/; domain=.${domain};`;
+    // Set cookie for root path, host, and domain
+    document.cookie = `googtrans=${googTransVal}; path=/;`;
+    document.cookie = `googtrans=${googTransVal}; path=/; domain=${domain};`;
+    if (domain.includes('.')) {
+      const rootDomain = '.' + domain.split('.').slice(-2).join('.');
+      document.cookie = `googtrans=${googTransVal}; path=/; domain=${rootDomain};`;
+    }
 
-    // Trigger iframe change or reload page for translation application
+    // Try finding Google Translate select box
     const combo = document.querySelector('.goog-te-combo') as HTMLSelectElement;
     if (combo) {
       combo.value = lang;
       combo.dispatchEvent(new Event('change'));
+      // Fallback reload if page did not translate within 300ms
+      setTimeout(() => {
+        const isTranslated = document.documentElement.classList.contains('translated-ltr') || document.documentElement.classList.contains('translated-rtl');
+        if (!isTranslated && lang === 'en') {
+          window.location.reload();
+        }
+      }, 300);
     } else {
       window.location.reload();
     }
@@ -73,7 +80,7 @@ export default function LanguageSwitcher({ isSolid = true }: { isSolid?: boolean
 
   return (
     <div className="relative flex items-center">
-      {/* Hidden Google Translate container */}
+      {/* Hidden Google Translate element */}
       <div id="google_translate_element" className="hidden" />
 
       {/* Styled Widget matching User Screenshot */}
@@ -87,7 +94,7 @@ export default function LanguageSwitcher({ isSolid = true }: { isSolid?: boolean
         <button
           type="button"
           onClick={() => switchLanguage('hi')}
-          className={`px-3 py-1 text-xs font-bold rounded-md transition-all duration-200 flex items-center gap-1.5 ${
+          className={`px-3 py-1 text-xs font-bold rounded-md transition-all duration-200 ${
             currentLang === 'hi'
               ? 'bg-accent text-white shadow-sm'
               : isSolid
@@ -101,7 +108,7 @@ export default function LanguageSwitcher({ isSolid = true }: { isSolid?: boolean
         <button
           type="button"
           onClick={() => switchLanguage('en')}
-          className={`px-3 py-1 text-xs font-bold rounded-md transition-all duration-200 flex items-center gap-1.5 ${
+          className={`px-3 py-1 text-xs font-bold rounded-md transition-all duration-200 ${
             currentLang === 'en'
               ? 'bg-accent text-white shadow-sm'
               : isSolid

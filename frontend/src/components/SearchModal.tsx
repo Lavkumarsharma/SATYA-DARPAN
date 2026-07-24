@@ -103,6 +103,32 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
         console.warn('Backend search API unreachable, falling back to direct articles fetch & local filter');
       }
 
+      // Helper for bilingual search term expansion (Hindi <-> English)
+      const TRANSLITERATIONS = [
+        { en: ['jantar mantar', 'protest', 'lathi charge', 'dharmendra pradhan', 'neet'], hi: ['जंतर मंतर', 'प्रदर्शन', 'लाठीचार्ज', 'धर्मेंद्र प्रधान', 'नीट'] },
+        { en: ['pm cares', 'pm cares fund', 'cag', 'rti', 'ventilator'], hi: ['पीएम केयर्स', 'पीएम केअर', 'सीएजी', 'आरटीआई', 'वेंटिलेटर'] },
+        { en: ['electoral bonds', 'bond', 'bjp', 'supreme court'], hi: ['इलेक्टोरल बॉन्ड्स', 'चुनावी बॉन्ड', 'सुप्रीम कोर्ट'] },
+        { en: ['adani', 'hindenburg', 'lic', 'sbi'], hi: ['अडानी', 'हिंडनबर्ग', 'एलआईसी', 'एसबीआई'] },
+        { en: ['economy', 'gdp', 'unemployment'], hi: ['अर्थव्यवस्था', 'जीडीपी', 'बेरोजगारी'] },
+      ];
+
+      const searchTerms = new Set<string>([q]);
+      for (const group of TRANSLITERATIONS) {
+        const matchEn = group.en.some(t => q.includes(t) || t.includes(q));
+        const matchHi = group.hi.some(t => q.includes(t) || t.includes(q));
+        if (matchEn || matchHi) {
+          group.en.forEach(t => searchTerms.add(t));
+          group.hi.forEach(t => searchTerms.add(t));
+        }
+      }
+
+      const matchItem = (item: any) => {
+        const title = (item.title || '').toLowerCase();
+        const excerpt = (item.excerpt || '').toLowerCase();
+        const cat = (item.category?.name || item.category || '').toLowerCase();
+        return Array.from(searchTerms).some(term => title.includes(term) || excerpt.includes(term) || cat.includes(term));
+      };
+
       // 2. If search API returned no results or failed, try fetching published articles from /articles
       if (fetchedResults.length === 0) {
         try {
@@ -110,12 +136,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
           if (res.ok) {
             const json = await res.json();
             const allArticles = json.data || [];
-            fetchedResults = allArticles.filter((item: any) => {
-              const title = (item.title || '').toLowerCase();
-              const excerpt = (item.excerpt || '').toLowerCase();
-              const cat = (item.category?.name || item.category || '').toLowerCase();
-              return title.includes(q) || excerpt.includes(q) || cat.includes(q);
-            });
+            fetchedResults = allArticles.filter(matchItem);
           }
         } catch (err) {
           console.warn('Backend articles API error:', err);
@@ -124,12 +145,7 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
       // 3. Fail-safe local match from FALLBACK_ARTICLES if still empty
       if (fetchedResults.length === 0) {
-        fetchedResults = FALLBACK_ARTICLES.filter((item: any) => {
-          const title = item.title.toLowerCase();
-          const excerpt = item.excerpt.toLowerCase();
-          const cat = (item.category?.name || '').toLowerCase();
-          return title.includes(q) || excerpt.includes(q) || cat.includes(q);
-        });
+        fetchedResults = FALLBACK_ARTICLES.filter(matchItem);
       }
 
       setResults(fetchedResults);

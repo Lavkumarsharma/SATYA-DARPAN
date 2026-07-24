@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { usePathname } from 'next/navigation';
 import { Search, Menu, X, Eye } from 'lucide-react';
 import SearchModal from '@/components/SearchModal';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -79,7 +80,10 @@ export default function Navbar() {
           </nav>
 
           {/* Action buttons */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            {/* Language Switcher Widget (Hindi | English) */}
+            <LanguageSwitcher isSolid={solid} />
+
             <button
               onClick={() => setSearchOpen(true)}
               aria-label="Search"
@@ -109,7 +113,11 @@ export default function Navbar() {
         {/* Mobile drawer */}
         {mobileMenuOpen && (
           <div className="md:hidden absolute top-full left-0 w-full bg-background/95 backdrop-blur-md border-t border-border shadow-lg">
-            <nav className="flex flex-col p-4">
+            <nav className="flex flex-col p-4 space-y-3">
+              <div className="pb-2 border-b border-border">
+                <span className="text-[10px] uppercase tracking-widest font-black text-text-muted block mb-2">Select Language</span>
+                <LanguageSwitcher isSolid={true} />
+              </div>
               {['Home', 'Categories', 'Fact Checks', 'Timeline', 'About'].map((item) => {
                 const itemPath = item === 'Home' ? '/' : `/${item.toLowerCase().replace(' ', '-')}`;
                 const isActive = pathname === itemPath;
@@ -117,8 +125,8 @@ export default function Navbar() {
                   <Link
                     key={item}
                     href={itemPath}
-                    className={`px-4 py-3 text-sm font-bold tracking-widest uppercase transition-colors ${
-                      isActive ? 'text-accent' : 'text-text hover:bg-white/5'
+                    className={`px-4 py-2 text-sm font-bold tracking-widest uppercase transition-colors rounded ${
+                      isActive ? 'text-accent bg-accent/10' : 'text-text hover:bg-white/5'
                     }`}
                     onClick={() => setMobileMenuOpen(false)}
                   >

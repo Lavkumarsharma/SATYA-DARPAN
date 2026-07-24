@@ -1,0 +1,53 @@
+/* ==========================================================================
+   Google Translate Custom Styling & Reset Rules
+   ========================================================================== */
+
+/* Prevent Google Translate top banner frame from shifting page layout */
+body {
+  top: 0 !important;
+  position: static !important;
+}
+
+/* Hide Google's default ugly toolbar, balloons, tooltips, and banners */
+.goog-te-banner-frame,
+.goog-te-banner,
+.goog-te-balloon-frame,
+#goog-gt-tt,
+.goog-te-spinner-pos,
+.goog-tooltip,
+.goog-tooltip:hover {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Hide Google text highlight on hover */
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-bottom: none !important;
+}
+
+/* Hide default Google Translate gadget text */
+.goog-te-gadget {
+  font-size: 0 !important;
+  color: transparent !important;
+}
+
+.goog-te-gadget span {
+  display: none !important;
+}
+
+/* Position Google Translate element offscreen so script initializes combo */
+#google_translate_element {
+  position: fixed !important;
+  top: -9999px !important;
+  left: -9999px !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  z-index: -9999 !important;
+}

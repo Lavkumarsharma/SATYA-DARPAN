@@ -86,8 +86,7 @@ export default function Navbar() {
 
           {/* Action buttons */}
           <div className="flex items-center gap-3">
-            {/* Language Switcher Widget (Hindi | English) */}
-            <LanguageSwitcher isSolid={solid} />
+            {/* Search button */}
 
             <button
               onClick={() => setSearchOpen(true)}

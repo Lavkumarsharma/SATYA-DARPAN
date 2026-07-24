@@ -7,6 +7,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 interface LanguageSwitcherProps {
   /** Optional position mode: 'floating' (default fixed top-right) or 'inline' */
   position?: 'floating' | 'inline';
+  isSolid?: boolean;
 }
 
 export default function LanguageSwitcher({ position = 'floating' }: LanguageSwitcherProps) {

@@ -44,17 +44,43 @@ export default function SearchModal({ isOpen, onClose }: SearchModalProps) {
     const timer = setTimeout(async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(query.trim())}`);
+        const searchQuery = query.trim();
+        const res = await fetch(`${API_URL}/search?q=${encodeURIComponent(searchQuery)}`);
+        
+        let fetchedData: any[] = [];
         if (res.ok) {
           const json = await res.json();
-          setResults(json.data || []);
+          fetchedData = json.data || [];
         }
+
+        // Fallback: If search endpoint returned empty, try fetching all published articles and filter client-side
+        if (fetchedData.length === 0) {
+          const articlesRes = await fetch(`${API_URL}/articles?limit=100`);
+          if (articlesRes.ok) {
+            const articlesJson = await articlesRes.json();
+            const allArticles = articlesJson.data || [];
+            const qLower = searchQuery.toLowerCase();
+            const words = qLower.split(/\s+/).filter(Boolean);
+
+            fetchedData = allArticles.filter((art: any) => {
+              const title = (art.title || '').toLowerCase();
+              const excerpt = (art.excerpt || '').toLowerCase();
+              const slug = (art.slug || '').toLowerCase();
+              const cat = (art.category?.name || art.category || '').toLowerCase();
+
+              return title.includes(qLower) || excerpt.includes(qLower) || slug.includes(qLower) || cat.includes(qLower) ||
+                words.some(w => title.includes(w) || excerpt.includes(w) || slug.includes(w));
+            });
+          }
+        }
+
+        setResults(fetchedData);
       } catch (err) {
         console.error('Search query error:', err);
       } finally {
         setLoading(false);
       }
-    }, 300);
+    }, 250);
 
     return () => clearTimeout(timer);
   }, [query]);

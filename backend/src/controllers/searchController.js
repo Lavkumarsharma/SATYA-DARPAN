@@ -5,18 +5,31 @@ const { asyncHandler } = require('../middleware/errorHandler');
 exports.search = asyncHandler(async (req, res) => {
   const {
     q, category, tags, year, author,
-    sort = 'relevance', page = 1, limit = 12,
+    sort, page = 1, limit = 20,
   } = req.query;
 
   const filter = { status: 'published' };
 
   if (q && q.trim()) {
-    const regex = new RegExp(q.trim(), 'i');
+    const rawQuery = q.trim();
+    const escapedQuery = rawQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const exactRegex = new RegExp(escapedQuery, 'i');
+    
+    // Also match individual words for partial keyword search
+    const words = rawQuery.split(/\s+/).filter(w => w.length > 1);
+    const wordConditions = words.map(w => {
+      const reg = new RegExp(w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'i');
+      return { $or: [{ title: reg }, { excerpt: reg }, { slug: reg }] };
+    });
+
     filter.$or = [
-      { title: regex },
-      { excerpt: regex },
+      { title: exactRegex },
+      { excerpt: exactRegex },
+      { slug: exactRegex },
+      ...(wordConditions.length > 0 ? wordConditions.flatMap(c => c.$or) : [])
     ];
   }
+
   if (category) filter.category = category;
   if (tags) filter.tags = { $in: tags.split(',') };
   if (author) filter.author = author;
@@ -26,15 +39,14 @@ exports.search = asyncHandler(async (req, res) => {
     filter.publishedAt = { $gte: startOfYear, $lt: endOfYear };
   }
 
-  let sortOption = '-publishedAt';
+  let sortOption = 'order -publishedAt';
   if (sort === 'oldest') sortOption = 'publishedAt';
   else if (sort === 'popular') sortOption = '-views';
-  else if (sort === 'relevance' && q) sortOption = { score: { $meta: 'textScore' } };
 
   const skip = (Number(page) - 1) * Number(limit);
 
   const [articles, total] = await Promise.all([
-    Article.find(filter, q ? { score: { $meta: 'textScore' } } : undefined)
+    Article.find(filter)
       .populate('author', 'name avatar')
       .populate('category', 'name slug color icon')
       .populate('tags', 'name slug color')

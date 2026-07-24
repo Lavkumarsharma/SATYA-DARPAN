@@ -1,0 +1,69 @@
+/* Google Translate Custom Styling & UI Clean Overrides */
+
+/* Hide Google Translate top bar frame and gadget elements */
+.goog-te-banner-frame,
+#goog-te-banner-frame,
+.goog-te-banner,
+.goog-te-balloon-frame,
+.goog-te-menu-frame,
+.goog-te-menu2,
+.goog-te-spinner-pos,
+.goog-te-spinner,
+.skiptranslate:not(#google_translate_element),
+#google_translate_element .goog-te-gadget-icon,
+#google_translate_element .goog-te-gadget-simple span,
+iframe.goog-te-banner-frame {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  height: 0 !important;
+  width: 0 !important;
+}
+
+/* Eliminate layout shift caused by Google Translate pushing body down */
+body {
+  top: 0px !important;
+  position: static !important;
+  min-height: 100vh !important;
+}
+
+/* Hide Google translate highlight on text hover */
+.goog-text-highlight {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Hide Google translate tooltips */
+.goog-tooltip,
+.goog-tooltip:hover {
+  display: none !important;
+}
+
+#goog-gt-tt,
+.goog-te-balloon-frame {
+  display: none !important;
+}
+
+/* Hidden Google Translate container */
+#google_translate_element {
+  position: absolute;
+  top: -9999px;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Smooth fade animation during language switching */
+.gt-translating {
+  opacity: 0.7;
+  transition: opacity 0.25s ease-in-out;
+  pointer-events: none;
+}
+
+.gt-translated-success {
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out;
+}
